@@ -509,7 +509,7 @@ For questions or feedback:
 
 - **Team Email:** [22duc.lnc@vinuni.edu.vn.com]
 - **Instructor:** Dr. Le Duy Dung
-- **Course:** Database Systems (Fall 2024)
+- **Course:** Database Systems (Fall 2025)
 
 ---
 
@@ -521,4 +521,4 @@ For questions or feedback:
 
 ---
 
-**Last Updated:** December 1, 2024
+**Last Updated:** December 1, 2025
