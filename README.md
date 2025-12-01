@@ -518,7 +518,7 @@ For questions or feedback:
 
 - **Team Email:** [your-team-email@example.com]
 - **Instructor:** Dr. Le Duy Dung
-- **Course:** Database Systems (Fall 2024)
+- **Course:** Database Systems (Fall 2025)
 
 ---
 
@@ -530,4 +530,4 @@ For questions or feedback:
 
 ---
 
-**Last Updated:** December 1, 2024
+**Last Updated:** December 1, 2025
