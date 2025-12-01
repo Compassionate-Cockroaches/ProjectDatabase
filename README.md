@@ -208,7 +208,6 @@ Many-to-many relationship: tracks player performance in each match.
 
 ### Entity Relationship Diagram (ERD)
 
-![ERD Placeholder](docs/erd_diagram.png)  
 _Full ERD will be included in the design document (Dec 15 submission)._
 
 ---
