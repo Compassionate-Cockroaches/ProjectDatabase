@@ -46,7 +46,6 @@ Our system provides a **full-stack database application** that:
 
 - CRUD operations for player profiles
 - Track player roles (Top, Jungle, Mid, Bot, Support)
-- Link players to teams with historical tracking
 - View individual player statistics (KDA, games played, champions)
 
 #### 3. **Tournament Management**
@@ -65,7 +64,6 @@ Our system provides a **full-stack database application** that:
 
 - **Player Analytics:**
   - Top players by KDA ratio
-  - Most played champions
   - Performance trends over time
   - Head-to-head comparisons
 - **Team Analytics:**
@@ -75,7 +73,6 @@ Our system provides a **full-stack database application** that:
 - **Tournament Analytics:**
   - Participation statistics
   - Match count per tournament
-  - Prize pool distributions
 
 #### 6. **User Authentication & Authorization**
 
@@ -95,7 +92,6 @@ Our system provides a **full-stack database application** that:
 #### 1. **Performance**
 
 - Query response time < 500ms for most operations
-- Support for 100,000+ match records
 - Optimized indexing on frequently queried columns
 
 #### 2. **Security**
@@ -127,9 +123,7 @@ Our system provides a **full-stack database application** that:
 - Data integrity enforced through foreign keys and constraints
 - Automated backups and transaction logging
 - Error handling with graceful degradation
-
 ---
-
 ## 🧱 Core Entities
 
 Our database schema consists of **6 core entities** with proper normalization (3NF):
@@ -206,7 +200,6 @@ _Full ERD will be included in the design document (Dec 15 submission)._
   - Relational database with full ACID compliance
   - Stored procedures for business logic
   - Triggers for audit logging and validation
-  - Views for complex analytics queries
   - Indexing and partitioning for performance
 
 - **Supporting Libraries:**
@@ -247,10 +240,10 @@ _Full ERD will be included in the design document (Dec 15 submission)._
 
 | Name            | Student ID | Role                                 | Responsibilities                                                                |
 | --------------- | ---------- | ------------------------------------ | ------------------------------------------------------------------------------- |
-| **[Your Name]** | [ID]       | **Project Lead & Backend Developer** | Database design (ERD, DDL), FastAPI implementation, stored procedures, triggers |
-| **[Member 2]**  | [ID]       | **Frontend Developer**               | React UI development, data visualization, responsive design                     |
-| **[Member 3]**  | [ID]       | **Database Administrator**           | Data import, indexing, query optimization, security configuration               |
-| **[Member 4]**  | [ID]       | **QA & Documentation**               | Testing (CRUD, analytics), documentation, presentation slides                   |
+| **Luu Nguyen Chi Duc** | [ID]       | **Project Lead & Backend Developer** | Database design (ERD, DDL), FastAPI implementation, stored procedures, triggers |
+| **Nguyen Dai Nghia**  | [ID]       | **Frontend Developer**               | React UI development, data visualization, responsive design                     |
+| **Nguyen Tuan Minh**  | [ID]       | **Database Administrator**           | Data import, indexing, query optimization, security configuration               |
+| **Nguyen Pham Tuan Anh**  | V202401425       | **QA & Documentation**               | Testing (CRUD, analytics), documentation, presentation slides                   |
 
 _Note: Roles are flexible and team members will collaborate across all areas._
 
@@ -260,7 +253,7 @@ _Note: Roles are flexible and team members will collaborate across all areas._
 
 | Milestone                                    | Deadline  | Deliverables                                                        | Status         |
 | -------------------------------------------- | --------- | ------------------------------------------------------------------- | -------------- |
-| **Week 1:** Team Formation & Topic Selection | Dec 1     | GitHub repo, README.md, Team registration                           | 🟢 In Progress |
+| **Week 1:** Team Formation & Topic Selection | Dec 1     | GitHub repo, README.md, Team registration                           | 🟢 Done |
 | **Week 2:** Peer Review                      | Dec 8     | Review other teams' proposals, incorporate feedback                 | ⬜ Pending     |
 | **Week 3:** Design Document                  | Dec 15    | Complete ERD, DDL scripts, normalized schema, task division         | ⬜ Pending     |
 | **Week 4:** Backend Implementation           | Dec 16-18 | FastAPI setup, database deployment, stored procedures, triggers     | ⬜ Pending     |
@@ -416,14 +409,12 @@ Frontend will run at: `http://localhost:3000`
 ### Triggers (Minimum 1 required)
 
 1. `validate_match_winner` - Ensure winner is a valid participant
-2. `auto_set_join_date` - Automatically set player join date
-3. `audit_log_trigger` - Log all data modifications
+2. `audit_log_trigger` - Log all data modifications
 
 ### Views (Minimum 1 required)
 
 1. `player_performance_view` - Aggregated player statistics
 2. `team_rankings_view` - Team rankings by win rate
-3. `tournament_summary_view` - Tournament participation and results
 
 ### Indexes (Performance Optimization)
 
@@ -516,7 +507,7 @@ This project is developed for educational purposes as part of the VinUniversity 
 
 For questions or feedback:
 
-- **Team Email:** [your-team-email@example.com]
+- **Team Email:** [22duc.lnc@vinuni.edu.vn.com]
 - **Instructor:** Dr. Le Duy Dung
 - **Course:** Database Systems (Fall 2024)
 
