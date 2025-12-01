@@ -240,14 +240,10 @@ _Full ERD will be included in the design document (Dec 15 submission)._
 
 | Name            | Student ID | Role                                 | Responsibilities                                                                |
 | --------------- | ---------- | ------------------------------------ | ------------------------------------------------------------------------------- |
-| **Luu Nguyen Chi Duc** | [ID]       | **Project Lead & Backend Developer** | Database design (ERD, DDL), FastAPI implementation, stored procedures, triggers |
-| **Nguyen Dai Nghia**  | [ID]       | **Frontend Developer**               | React UI development, data visualization, responsive design                     |
-| **Nguyen Tuan Minh**  | [ID]       | **Database Administrator**           | Data import, indexing, query optimization, security configuration               |
-| **Nguyen Pham Tuan Anh**  | V202401425       | **QA & Documentation**               | Testing (CRUD, analytics), documentation, presentation slides                   |
-| **[Your Name]** | V202200664 | **Project Lead & Backend Developer** | Database design (ERD, DDL), FastAPI implementation, stored procedures, triggers |
-| **[Member 2]**  | V202200779 | **Frontend Developer**               | React UI development, data visualization, responsive design                     |
-| **[Member 3]**  | V202401627 | **Database Administrator**           | Data import, indexing, query optimization, security configuration               |
-| **[Member 4]**  | [ID]       | **QA & Documentation**               | Testing (CRUD, analytics), documentation, presentation slides                   |
+| **Luu Nguyen Chi Duc** | V202200664  | **Project Lead & Backend Developer** | Database design (ERD, DDL), FastAPI implementation, stored procedures, triggers |
+| **Nguyen Dai Nghia**  | V202200779   | **Frontend Developer**               | React UI development, data visualization, responsive design                     |
+| **Nguyen Tuan Minh**  | V202401627   | **Database Administrator**           | Data import, indexing, query optimization, security configuration               |
+| **Nguyen Pham Tuan Anh**  | V202401425 | **QA & Documentation**               | Testing (CRUD, analytics), documentation, presentation slides                   |
 
 _Note: Roles are flexible and team members will collaborate across all areas._
 
