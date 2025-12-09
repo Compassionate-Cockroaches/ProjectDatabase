@@ -1,5 +1,17 @@
-fastapi[standard]==0.115.5
-sqlalchemy==2.0.36
-pymysql==1.1.1
-python-dotenv==1.0.1
-pydantic-settings==2.6.1
+# FastAPI
+fastapi[standard]==0.124.0
+uvicorn[standard]==0.24.0
+pydantic-settings==2.10.1
+
+# Database
+sqlmodel==0.0.27
+pymysql==1.1.0
+
+# JWT
+pyjwt==2.10.1
+
+# Password hashing
+pwdlib[argon2]==0.3.0
+
+# Environment variables
+python-dotenv==1.0.0
