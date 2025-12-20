@@ -23,7 +23,7 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link
@@ -62,7 +62,7 @@ export default function Navbar() {
                           {user?.username.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <span className="hidden md:inline max-w-[100px] truncate">
+                      <span className="hidden md:inline max-w-25 truncate">
                         {user?.username}
                       </span>
                       <IconChevronDown size={14} className="opacity-50" />

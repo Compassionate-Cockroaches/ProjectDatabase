@@ -199,7 +199,7 @@ export default function HomePage() {
                 className="flex gap-4 p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
               >
                 <div
-                  className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center flex-shrink-0`}
+                  className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center shrink-0`}
                 >
                   <feature.icon size={24} />
                 </div>
