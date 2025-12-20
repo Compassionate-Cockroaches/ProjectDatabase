@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.core.database import get_session
-from app.models.teams import Team
-from app.schemas.teams import TeamCreate, TeamUpdate, TeamResponse
+from backend.app.models.team import Team
+from backend.app.schemas.team import TeamCreate, TeamUpdate, TeamResponse
 from app.api.deps import require_admin
 
 router = APIRouter(prefix="/teams", tags=["Teams"])

@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
 class TeamBase(BaseModel):
     team_name: str
@@ -11,11 +10,10 @@ class TeamCreate(TeamBase):
 
 class TeamUpdate(BaseModel):
     team_name: Optional[str] = None
-    region: Optional[str] = None
+    external_id: Optional[str] = None
 
 class TeamResponse(TeamBase):
-    id: int
-    created_at: datetime
+    id: str
 
     class Config:
         from_attributes = True
