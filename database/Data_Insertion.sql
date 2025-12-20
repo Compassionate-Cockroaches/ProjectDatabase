@@ -88,7 +88,7 @@ SELECT
     rmd.monsterkills,
     rmd.cspm
 FROM raw_match_data rmd
-JOIN Matches m ON m.external_id = rmd.gameid
-JOIN Player p ON p.external_id = rmd.playerid
-JOIN Team t ON t.external_id = rmd.teamid
+JOIN matches m ON m.external_id = rmd.gameid
+JOIN players p ON p.external_id = rmd.playerid
+JOIN teams t ON t.external_id = rmd.teamid
 WHERE rmd.participantid NOT IN (100, 200);
