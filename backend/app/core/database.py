@@ -2,11 +2,19 @@ from sqlmodel import Session, SQLModel, create_engine
 from typing import Generator
 from app.core.config import settings
 
+connect_args = {
+    "ssl": {
+        "ssl_mode": "REQUIRED"
+    }
+}
+
+
 # Create database engine
 engine = create_engine(
     settings.DATABASE_URL,
     echo=True,  # Set to False in production
-    pool_pre_ping=True
+    pool_pre_ping=True,
+    connect_args=connect_args
 )
 
 # Create all tables
