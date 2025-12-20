@@ -3,10 +3,10 @@ from typing import Optional
 
 class TeamBase(BaseModel):
     team_name: str
-    region: Optional[str] = None
+    external_id: Optional[str] = None
 
 class TeamCreate(TeamBase):
-    pass
+    team_name: str
 
 class TeamUpdate(BaseModel):
     team_name: Optional[str] = None
@@ -14,6 +14,6 @@ class TeamUpdate(BaseModel):
 
 class TeamResponse(TeamBase):
     id: str
-
+    
     class Config:
         from_attributes = True

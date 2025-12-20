@@ -1,40 +1,31 @@
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 
+from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
+from app.models.user import User
 from backend.app.models.team import Team
-from backend.app.schemas.team import TeamCreate, TeamUpdate, TeamResponse
-from app.api.deps import require_admin
+from backend.app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 
-@router.post("/", response_model=TeamResponse, status_code=status.HTTP_201_CREATED)
-async def create_team(
-    team_data: TeamCreate,
-    session: Annotated[Session, Depends(get_session)],
-    current_user=Depends(require_admin),
-):
-
-    statement = select(Team).where(Team.team_name == team_data.team_name)
-    existing = session.exec(statement).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Team name already exists")
-
-    team = Team(**team_data.model_dump())
-    session.add(team)
-    session.commit()
-    session.refresh(team)
-    return team
-
 
 @router.get("/", response_model=List[TeamResponse])
-async def read_teams(
-    skip: int = 0,
-    limit: int = 100,
+async def list_teams(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    search: str = Query(None, description="Search by team name"),
     session: Annotated[Session, Depends(get_session)] = None,
 ):
+    """Get all teams (Public access)"""
     statement = select(Team).offset(skip).limit(limit)
+
+    # Add search filter if provided
+    if search:
+        statement = statement.where(Team.team_name.contains(search))
+
     teams = session.exec(statement).all()
     return teams
 
@@ -44,9 +35,34 @@ async def read_team(
     team_id: int,
     session: Annotated[Session, Depends(get_session)],
 ):
+    """Get single team by ID (Public access)"""
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
+    return team
+
+
+@router.post("/", response_model=TeamResponse, status_code=status.HTTP_201_CREATED)
+async def create_team(
+    team_data: TeamCreate,
+    session: Annotated[Session, Depends(get_session)],
+    current_user=Annotated[User, Depends(require_admin)],
+):
+    """Create new team (Admin only)"""
+    # Check if team name already exists
+    statement = select(Team).where(Team.team_name == team_data.team_name)
+    existing = session.exec(statement).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Team name already exists"
+        )
+
+    # Create team
+    # Admin-created team → external_id is ALWAYS NULL
+    team = Team(team_name=team_data.team_name, external_id=None)
+    session.add(team)
+    session.commit()
+    session.refresh(team)
     return team
 
 
@@ -55,8 +71,9 @@ async def update_team(
     team_id: int,
     team_data: TeamUpdate,
     session: Annotated[Session, Depends(get_session)],
-    current_user=Depends(require_admin),
+    current_user: Annotated[User, Depends(require_admin)],
 ):
+    """Update team (Admin only)"""
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
@@ -84,6 +101,7 @@ async def delete_team(
     session: Annotated[Session, Depends(get_session)],
     current_user=Depends(require_admin),
 ):
+    """Delete team (Admin only)"""
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
