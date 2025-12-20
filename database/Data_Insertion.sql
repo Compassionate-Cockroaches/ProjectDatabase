@@ -1,28 +1,28 @@
 use lol_esports_DB; 
 
-INSERT IGNORE INTO Team (external_id, team_name)
+INSERT IGNORE INTO teams (external_id, team_name)
 SELECT DISTINCT teamid, teamname
 FROM raw_match_data
 WHERE participantid NOT IN (100, 200)
 AND teamid IS NOT NULL;
 
-INSERT IGNORE INTO Tournament (league, year, split, playoffs)
+INSERT IGNORE INTO tournaments (league, year, split, playoffs)
 SELECT DISTINCT league, year, split, playoffs
 FROM raw_match_data
 WHERE participantid NOT IN (100, 200);
 
-INSERT IGNORE INTO Team_Tournament (team_id, tournament_id)
+INSERT IGNORE INTO team_tournaments (team_id, tournament_id)
 SELECT DISTINCT t.id, tour.id
 FROM raw_match_data rmd
-JOIN Team t ON t.external_id = rmd.teamid
-JOIN Tournament tour ON 
+JOIN teams t ON t.external_id = rmd.teamid
+JOIN tournaments tour ON 
     tour.league = rmd.league 
     AND tour.year = rmd.year 
     AND (tour.split = rmd.split OR (tour.split IS NULL AND rmd.split IS NULL))
     AND tour.playoffs = rmd.playoffs
 where rmd.participantid NOT IN (100, 200);
 
-INSERT IGNORE INTO Matches (external_id, tournament_id, game_number, game_length, patch, match_date, data_completeness, url)
+INSERT IGNORE INTO matches (external_id, tournament_id, game_number, game_length, patch, match_date, data_completeness, url)
 SELECT
     rmd.gameid,
     tour.id,
@@ -33,7 +33,7 @@ SELECT
     MAX(rmd.datacompleteness),
     MAX(rmd.url)
 FROM raw_match_data rmd
-JOIN Tournament tour ON
+JOIN tournaments tour ON
     tour.league = rmd.league
     AND tour.year = rmd.year
     AND (tour.split = rmd.split OR (tour.split IS NULL AND rmd.split IS NULL))
@@ -41,13 +41,13 @@ JOIN Tournament tour ON
 WHERE rmd.participantid NOT IN (100, 200)
 GROUP BY rmd.gameid, tour.id;
 
-INSERT IGNORE INTO Player (external_id, player_name, position)
+INSERT IGNORE INTO player (external_id, player_name, position)
 SELECT DISTINCT playerid, playername, position
 FROM raw_match_data
 WHERE participantid NOT IN (100, 200)
 AND playerid IS NOT NULL;
 
-INSERT IGNORE INTO Match_Player_Stats
+INSERT IGNORE INTO match_player_stats
 (match_id, player_id, team_id, side, champion, result,
  kills, deaths, assists, doublekills, triplekills, quadrakills, pentakills,
  firstblood, firstbloodkill, firstbloodassist,
