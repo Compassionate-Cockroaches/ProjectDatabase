@@ -16,6 +16,3 @@ class Match(SQLModel, table=True):
     data_completeness: Optional[str] = Field(default=None)
     url: Optional[str] = Field(default=None)
     
-    # Relationships
-    tournament: "Tournament" = Relationship(back_populates="matches")
-    player_stats: List["MatchPlayerStats"] = Relationship(back_populates="match")

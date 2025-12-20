@@ -49,7 +49,3 @@ class MatchPlayerStats(SQLModel, table=True):
     monsterkills: Optional[int] = Field(default=0)
     cspm: Optional[Decimal] = Field(default=0)  # CS per minute
     
-    # Relationships
-    match: "Match" = Relationship(back_populates="player_stats")
-    player: "Player" = Relationship(back_populates="match_stats")
-    team: "Team" = Relationship(back_populates="match_stats")

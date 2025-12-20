@@ -11,9 +11,3 @@ class Tournament(SQLModel, table=True):
     split: Optional[str] = Field(default=None)  # Spring, Summer, MSI, Worlds
     playoffs: bool = Field(default=False)  # 0=regular season, 1=playoffs
     
-    # Relationships
-    matches: List["Match"] = Relationship(back_populates="tournament")
-    teams: List["Team"] = Relationship(
-        back_populates="tournaments",
-        link_model="TeamTournament"
-    )

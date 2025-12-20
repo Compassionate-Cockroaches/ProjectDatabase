@@ -10,5 +10,3 @@ class Player(SQLModel, table=True):
     player_name: str = Field(nullable=False, index=True)
     position: Optional[str] = Field(default=None)  # Top, Jungle, Mid, Bot, Support
     
-    # Relationships
-    match_stats: List["MatchPlayerStats"] = Relationship(back_populates="player")

@@ -6,8 +6,8 @@ from sqlmodel import Session, select
 from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
 from app.models.user import User
-from backend.app.models.team import Team
-from backend.app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
+from app.models.team import Team
+from app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 
