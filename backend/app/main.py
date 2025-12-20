@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, users
+from app.api.routes import auth, users, teams
 from app.core.config import settings
 from app.core.database import create_db_and_tables
 
@@ -33,6 +33,7 @@ def on_startup():
 # Include routers
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
+app.include_router(teams.router, prefix="/api")
 
 
 # Root endpoints
