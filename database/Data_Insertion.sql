@@ -41,7 +41,7 @@ JOIN tournaments tour ON
 WHERE rmd.participantid NOT IN (100, 200)
 GROUP BY rmd.gameid, tour.id;
 
-INSERT IGNORE INTO player (external_id, player_name, position)
+INSERT IGNORE INTO players (external_id, player_name, position)
 SELECT DISTINCT playerid, playername, position
 FROM raw_match_data
 WHERE participantid NOT IN (100, 200)
