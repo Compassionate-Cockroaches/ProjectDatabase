@@ -1,11 +1,11 @@
 use lol_esports_DB; 
 
-DROP TABLE IF EXISTS Match_Player_Stats;
-DROP TABLE IF EXISTS Player;
-DROP TABLE IF EXISTS Team_Tournament;
-DROP TABLE IF EXISTS Matches;
-DROP TABLE IF EXISTS Tournament;
-DROP TABLE IF EXISTS Team;
+DROP TABLE IF EXISTS match_player_stats;
+DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS team_tournaments;
+DROP TABLE IF EXISTS matches;
+DROP TABLE IF EXISTS tournaments;
+DROP TABLE IF EXISTS teams;
 drop table if exists raw_match_data;
 
 --- Raw data
@@ -119,13 +119,13 @@ CREATE TABLE raw_match_data (
 );
 
 --- Create tables
-CREATE TABLE Team (
+CREATE TABLE teams (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     external_id VARCHAR(64) UNIQUE,
     team_name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE Tournament (
+CREATE TABLE tournaments (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     league VARCHAR(50) NOT NULL,
     year INT NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE Tournament (
     UNIQUE KEY unique_tournament (league, year, split, playoffs)
 );
 
-CREATE TABLE Matches (
+CREATE TABLE matches (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     external_id VARCHAR(64) NOT NULL UNIQUE,
     tournament_id CHAR(36),
@@ -149,14 +149,14 @@ CREATE TABLE Matches (
         ON DELETE CASCADE
 );
 
-CREATE TABLE Player (
+CREATE TABLE players (
     id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     external_id VARCHAR(64) NOT NULL UNIQUE,
     player_name VARCHAR(100) NOT NULL,
     position VARCHAR(20)
 );
 
-CREATE TABLE Team_Tournament (
+CREATE TABLE team_tournaments (
     team_id CHAR(36),
     tournament_id CHAR(36),
     PRIMARY KEY (team_id, tournament_id),
@@ -168,7 +168,7 @@ CREATE TABLE Team_Tournament (
         ON DELETE CASCADE
 );
 
-CREATE TABLE Match_Player_Stats (
+CREATE TABLE match_player_stats (
     match_id CHAR(36),
     player_id CHAR(36),
     team_id CHAR(36),
