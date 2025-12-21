@@ -2,8 +2,8 @@ import api from "./api";
 import type { Player, PlayerCreate, PlayerUpdate } from "@/types/player";
 
 export const playerService = {
-  getAll: async (): Promise<Player[]> => {
-    const response = await api.get("/api/players/");
+  getAll: async (params?: { skip?: number; limit?: number; search?: string; position?: string }): Promise<Player[]> => {
+    const response = await api.get("/api/players/", { params });
     return response.data;
   },
 

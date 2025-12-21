@@ -2,8 +2,8 @@ import api from "./api";
 import type { Match, MatchCreate, MatchUpdate } from "@/types/match";
 
 export const matchService = {
-  getAll: async (): Promise<Match[]> => {
-    const response = await api.get("/api/matches/");
+  getAll: async (params?: { skip?: number; limit?: number; tournament_id?: string }): Promise<Match[]> => {
+    const response = await api.get("/api/matches/", { params });
     return response.data;
   },
 
