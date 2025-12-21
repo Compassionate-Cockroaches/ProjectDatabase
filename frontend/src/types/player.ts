@@ -3,6 +3,7 @@ export interface Player {
   player_name: string;
   position?: string;
   external_id?: string;
+  team_names?: string[]; // Teams the player has played for
 }
 
 export interface PlayerCreate {

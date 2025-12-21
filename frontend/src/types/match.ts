@@ -8,6 +8,7 @@ export interface Match {
   data_completeness?: string;
   url?: string;
   external_id?: string;
+  team_names?: string[]; // List of team names in the match
 }
 
 export interface MatchCreate {
