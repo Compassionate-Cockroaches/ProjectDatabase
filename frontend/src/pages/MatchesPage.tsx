@@ -52,20 +52,29 @@ import {
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-const ITEMS_PER_PAGE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 const MatchesPage: React.FC = () => {
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [tournamentFilter, setTournamentFilter] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sortBy, setSortBy] = useState<string>("match_date");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
 
   const {
     data: matches,
     isLoading,
     isError,
   } = useMatches({
-    skip: page * ITEMS_PER_PAGE,
-    limit: ITEMS_PER_PAGE,
+    skip: page * pageSize,
+    limit: pageSize,
     tournament_id: tournamentFilter || undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
+    sort_by: sortBy,
+    sort_order: sortOrder,
   });
   const { data: tournaments } = useTournaments({ limit: 100 }); // Get more tournaments for filter
 
@@ -116,11 +125,13 @@ const MatchesPage: React.FC = () => {
 
   const handleClearFilters = () => {
     setTournamentFilter("");
+    setDateFrom("");
+    setDateTo("");
     setPage(0);
   };
 
-  const hasActiveFilters = tournamentFilter;
-  const hasNextPage = matches && matches.length === ITEMS_PER_PAGE;
+  const hasActiveFilters = tournamentFilter || dateFrom || dateTo;
+  const hasNextPage = matches && matches.length === pageSize;
   const hasPrevPage = page > 0;
 
   // Helper function to get tournament display name
@@ -245,7 +256,7 @@ const MatchesPage: React.FC = () => {
         </Dialog>
       </div>
 
-      <div className="mb-4 flex gap-4">
+      <div className="mb-4 flex gap-4 flex-wrap">
         <Select
           value={tournamentFilter}
           onValueChange={(value) => {
@@ -253,9 +264,9 @@ const MatchesPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[280px]">
+          <SelectTrigger className="w-[200px]">
             <IconFilter className="mr-2" size={16} />
-            <SelectValue placeholder="Filter by Tournament" />
+            <SelectValue placeholder="Tournament" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value=" ">All Tournaments</SelectItem>
@@ -264,6 +275,61 @@ const MatchesPage: React.FC = () => {
                 {tournament.league} {tournament.year} {tournament.split}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          type="date"
+          placeholder="From date"
+          value={dateFrom}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+            setPage(0);
+          }}
+          className="w-[150px]"
+        />
+
+        <Input
+          type="date"
+          placeholder="To date"
+          value={dateTo}
+          onChange={(e) => {
+            setDateTo(e.target.value);
+            setPage(0);
+          }}
+          className="w-[150px]"
+        />
+
+        <Select
+          value={sortBy}
+          onValueChange={(value) => {
+            setSortBy(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="match_date">Date</SelectItem>
+            <SelectItem value="game_length">Game Length</SelectItem>
+            <SelectItem value="patch">Patch</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortOrder}
+          onValueChange={(value) => {
+            setSortOrder(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Order" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">Oldest First</SelectItem>
+            <SelectItem value="desc">Newest First</SelectItem>
           </SelectContent>
         </Select>
 
@@ -353,24 +419,49 @@ const MatchesPage: React.FC = () => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page - 1)}
-          disabled={!hasPrevPage}
-        >
-          Previous
-        </Button>
-        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page + 1)}
-          disabled={!hasNextPage}
-        >
-          Next
-        </Button>
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Items per page:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page - 1)}
+            disabled={!hasPrevPage}
+          >
+            Previous
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            Page {page + 1} of {hasNextPage ? `${page + 2}+` : page + 1}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page + 1)}
+            disabled={!hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
       </div>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

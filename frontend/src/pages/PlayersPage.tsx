@@ -1,12 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +8,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -52,13 +52,16 @@ import {
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-const ITEMS_PER_PAGE = 10;
 const POSITIONS = ["Top", "Jungle", "Mid", "Bot", "Support"];
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 const PlayersPage: React.FC = () => {
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const [position, setPosition] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("player_name");
+  const [sortOrder, setSortOrder] = useState<string>("asc");
   const debouncedSearch = useDebounce(search, 500);
 
   const {
@@ -66,10 +69,12 @@ const PlayersPage: React.FC = () => {
     isLoading,
     isError,
   } = usePlayers({
-    skip: page * ITEMS_PER_PAGE,
-    limit: ITEMS_PER_PAGE,
+    skip: page * pageSize,
+    limit: pageSize,
     search: debouncedSearch || undefined,
     position: position || undefined,
+    sort_by: sortBy,
+    sort_order: sortOrder,
   });
 
   const createMutation = useCreatePlayer();
@@ -124,7 +129,7 @@ const PlayersPage: React.FC = () => {
   };
 
   const hasActiveFilters = search || position;
-  const hasNextPage = players && players.length === ITEMS_PER_PAGE;
+  const hasNextPage = players && players.length === pageSize;
   const hasPrevPage = page > 0;
 
   // Helper function to format team names
@@ -202,7 +207,7 @@ const PlayersPage: React.FC = () => {
         </Dialog>
       </div>
 
-      <div className="mb-4 flex gap-4">
+      <div className="mb-4 flex gap-4 flex-wrap">
         <div className="relative max-w-sm flex-1">
           <IconSearch
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -225,7 +230,7 @@ const PlayersPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-45">
+          <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Position" />
           </SelectTrigger>
           <SelectContent>
@@ -235,6 +240,36 @@ const PlayersPage: React.FC = () => {
                 {pos}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={sortBy}
+          onValueChange={(value) => {
+            setSortBy(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="player_name">Name</SelectItem>
+            <SelectItem value="position">Position</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={sortOrder}
+          onValueChange={(value) => {
+            setSortOrder(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Order" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">A → Z</SelectItem>
+            <SelectItem value="desc">Z → A</SelectItem>
           </SelectContent>
         </Select>
         {hasActiveFilters && (
@@ -307,24 +342,49 @@ const PlayersPage: React.FC = () => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page - 1)}
-          disabled={!hasPrevPage}
-        >
-          Previous
-        </Button>
-        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page + 1)}
-          disabled={!hasNextPage}
-        >
-          Next
-        </Button>
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Items per page:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page - 1)}
+            disabled={!hasPrevPage}
+          >
+            Previous
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            Page {page + 1} of {hasNextPage ? `${page + 2}+` : page + 1}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page + 1)}
+            disabled={!hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
       </div>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
@@ -378,17 +438,24 @@ const PlayersPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the player "{playerToDelete?.player_name}". This action cannot be undone.
+              This will permanently delete the player "
+              {playerToDelete?.player_name}". This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

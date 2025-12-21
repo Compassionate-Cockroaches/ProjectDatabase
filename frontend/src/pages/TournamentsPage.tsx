@@ -55,7 +55,7 @@ import {
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-const ITEMS_PER_PAGE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const LEAGUES = [
   "LCK",
   "LPL",
@@ -71,20 +71,25 @@ const LEAGUES = [
 
 const TournamentsPage: React.FC = () => {
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [yearFilter, setYearFilter] = useState<string>("");
   const [leagueFilter, setLeagueFilter] = useState<string>("");
   const [playoffsFilter, setPlayoffsFilter] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("year");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
 
   const {
     data: tournaments,
     isLoading,
     isError,
   } = useTournaments({
-    skip: page * ITEMS_PER_PAGE,
-    limit: ITEMS_PER_PAGE,
+    skip: page * pageSize,
+    limit: pageSize,
     year: yearFilter ? parseInt(yearFilter) : undefined,
     league: leagueFilter || undefined,
     playoffs: playoffsFilter ? playoffsFilter === "true" : undefined,
+    sort_by: sortBy,
+    sort_order: sortOrder,
   });
 
   const createMutation = useCreateTournament();
@@ -145,7 +150,7 @@ const TournamentsPage: React.FC = () => {
   };
 
   const hasActiveFilters = yearFilter || leagueFilter || playoffsFilter;
-  const hasNextPage = tournaments && tournaments.length === ITEMS_PER_PAGE;
+  const hasNextPage = tournaments && tournaments.length === pageSize;
   const hasPrevPage = page > 0;
 
   // Generate year options (current year and previous 5 years)
@@ -262,7 +267,7 @@ const TournamentsPage: React.FC = () => {
         </Dialog>
       </div>
 
-      <div className="mb-4 flex gap-4">
+      <div className="mb-4 flex gap-4 flex-wrap">
         <Select
           value={yearFilter}
           onValueChange={(value) => {
@@ -318,6 +323,39 @@ const TournamentsPage: React.FC = () => {
             <SelectItem value=" ">All</SelectItem>
             <SelectItem value="true">Playoffs</SelectItem>
             <SelectItem value="false">Regular Season</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortBy}
+          onValueChange={(value) => {
+            setSortBy(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="year">Year</SelectItem>
+            <SelectItem value="league">League</SelectItem>
+            <SelectItem value="split">Split</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortOrder}
+          onValueChange={(value) => {
+            setSortOrder(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Order" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">Oldest First</SelectItem>
+            <SelectItem value="desc">Newest First</SelectItem>
           </SelectContent>
         </Select>
 
@@ -397,24 +435,49 @@ const TournamentsPage: React.FC = () => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page - 1)}
-          disabled={!hasPrevPage}
-        >
-          Previous
-        </Button>
-        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page + 1)}
-          disabled={!hasNextPage}
-        >
-          Next
-        </Button>
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Items per page:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page - 1)}
+            disabled={!hasPrevPage}
+          >
+            Previous
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            Page {page + 1} of {hasNextPage ? `${page + 2}+` : page + 1}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page + 1)}
+            disabled={!hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
       </div>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

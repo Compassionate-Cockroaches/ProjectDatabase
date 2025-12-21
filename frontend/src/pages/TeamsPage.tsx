@@ -35,15 +35,25 @@ import {
   useUpdateTeam,
 } from "@/hooks/useTeams";
 import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
-import { IconEdit, IconPlus, IconSearch, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconPlus, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const ITEMS_PER_PAGE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 const TeamsPage: React.FC = () => {
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<string>("team_name");
+  const [sortOrder, setSortOrder] = useState<string>("asc");
   const debouncedSearch = useDebounce(search, 500);
 
   const {
@@ -51,9 +61,11 @@ const TeamsPage: React.FC = () => {
     isLoading,
     isError,
   } = useTeams({
-    skip: page * ITEMS_PER_PAGE,
-    limit: ITEMS_PER_PAGE,
+    skip: page * pageSize,
+    limit: pageSize,
     search: debouncedSearch || undefined,
+    sort_by: sortBy,
+    sort_order: sortOrder,
   });
 
   const createMutation = useCreateTeam();
@@ -98,14 +110,14 @@ const TeamsPage: React.FC = () => {
     }
   };
 
-  const hasNextPage = teams && teams.length === ITEMS_PER_PAGE;
-  const hasPrevPage = page > 0;
-
-  // Helper function to format tournament names
-  const getTournamentsDisplay = (tournamentNames?: string[]) => {
-    if (!tournamentNames || tournamentNames.length === 0) return "-";
-    return tournamentNames.join(", ");
+  const handleClearFilters = () => {
+    setSearch("");
+    setPage(0);
   };
+
+  const hasActiveFilters = search;
+  const hasNextPage = teams && teams.length === pageSize;
+  const hasPrevPage = page > 0;
 
   if (isLoading)
     return <div className="container mx-auto py-10">Loading teams...</div>;
@@ -152,7 +164,7 @@ const TeamsPage: React.FC = () => {
         </Dialog>
       </div>
 
-      <div className="mb-4 flex gap-4">
+      <div className="mb-4 flex gap-4 flex-wrap">
         <div className="relative max-w-sm flex-1">
           <IconSearch
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -168,6 +180,40 @@ const TeamsPage: React.FC = () => {
             className="pl-10"
           />
         </div>
+        <Select
+          value={sortBy}
+          onValueChange={(value) => {
+            setSortBy(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="team_name">Team Name</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={sortOrder}
+          onValueChange={(value) => {
+            setSortOrder(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Order" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">A → Z</SelectItem>
+            <SelectItem value="desc">Z → A</SelectItem>
+          </SelectContent>
+        </Select>
+        {hasActiveFilters && (
+          <Button variant="outline" size="icon" onClick={handleClearFilters}>
+            <IconX size={18} />
+          </Button>
+        )}
       </div>
 
       <div className="rounded-md border">
@@ -228,24 +274,49 @@ const TeamsPage: React.FC = () => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page - 1)}
-          disabled={!hasPrevPage}
-        >
-          Previous
-        </Button>
-        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(page + 1)}
-          disabled={!hasNextPage}
-        >
-          Next
-        </Button>
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Items per page:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page - 1)}
+            disabled={!hasPrevPage}
+          >
+            Previous
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            Page {page + 1} of {hasNextPage ? `${page + 2}+` : page + 1}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page + 1)}
+            disabled={!hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
       </div>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

@@ -2,7 +2,15 @@ import api from "./api";
 import type { Tournament, TournamentCreate, TournamentUpdate } from "@/types/tournament";
 
 export const tournamentService = {
-  getAll: async (params?: { skip?: number; limit?: number; year?: number; league?: string; playoffs?: boolean }): Promise<Tournament[]> => {
+  getAll: async (params?: { 
+    skip?: number; 
+    limit?: number; 
+    year?: number; 
+    league?: string; 
+    playoffs?: boolean;
+    sort_by?: string;
+    sort_order?: string;
+  }): Promise<Tournament[]> => {
     const response = await api.get("/api/tournaments/", { params });
     return response.data;
   },
