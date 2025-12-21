@@ -44,7 +44,24 @@ async def list_matches(
     statement = statement.order_by(Match.match_date.desc())
 
     matches = session.exec(statement).all()
-    return matches
+    
+    # Enrich matches with team information
+    enriched_matches = []
+    for match in matches:
+        # Get unique teams for this match from match_player_stats
+        team_statement = (
+            select(Team.team_name)
+            .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+            .where(MatchPlayerStats.match_id == match.id)
+            .distinct()
+        )
+        team_names = session.exec(team_statement).all()
+        
+        match_dict = match.model_dump()
+        match_dict["team_names"] = list(team_names)
+        enriched_matches.append(MatchResponse(**match_dict))
+    
+    return enriched_matches
 
 
 @router.get("/{match_id}", response_model=MatchResponse)

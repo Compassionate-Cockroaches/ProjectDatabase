@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class PlayerBase(BaseModel):
     player_name: str
@@ -16,6 +16,7 @@ class PlayerUpdate(BaseModel):
 
 class PlayerResponse(PlayerBase):
     id: str
+    team_names: Optional[List[str]] = None  # Teams the player has played for
     
     class Config:
         from_attributes = True

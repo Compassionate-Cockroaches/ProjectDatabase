@@ -7,6 +7,7 @@ from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
 from app.models.match_player_stats import MatchPlayerStats
 from app.models.player import Player
+from app.models.team import Team
 from app.models.user import User
 from app.schemas.player import (
     PlayerCreate,
@@ -38,7 +39,24 @@ async def list_players(
         statement = statement.where(Player.player_name.contains(search))
 
     players = session.exec(statement).all()
-    return players
+    
+    # Enrich players with team information
+    enriched_players = []
+    for player in players:
+        # Get unique teams for this player from match_player_stats
+        team_statement = (
+            select(Team.team_name)
+            .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+            .where(MatchPlayerStats.player_id == player.id)
+            .distinct()
+        )
+        team_names = session.exec(team_statement).all()
+        
+        player_dict = player.model_dump()
+        player_dict["team_names"] = list(team_names)
+        enriched_players.append(PlayerResponse(**player_dict))
+    
+    return enriched_players
 
 
 @router.get("/{player_id}", response_model=PlayerWithStats)

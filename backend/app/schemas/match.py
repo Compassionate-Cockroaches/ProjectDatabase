@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 class MatchBase(BaseModel):
@@ -27,6 +27,7 @@ class MatchUpdate(BaseModel):
 
 class MatchResponse(MatchBase):
     id: str
+    team_names: Optional[List[str]] = None  # List of team names in the match
     
     class Config:
         from_attributes = True

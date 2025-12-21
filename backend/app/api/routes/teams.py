@@ -6,6 +6,8 @@ from sqlmodel import Session, select
 from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
 from app.models.team import Team
+from app.models.team_tournament import TeamTournament
+from app.models.tournament import Tournament
 from app.models.user import User
 from app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
 
@@ -27,7 +29,30 @@ async def list_teams(
         statement = statement.where(Team.team_name.contains(search))
 
     teams = session.exec(statement).all()
-    return teams
+    
+    # Enrich teams with tournament information
+    enriched_teams = []
+    for team in teams:
+        # Get tournaments for this team from team_tournaments table
+        tournament_statement = (
+            select(Tournament.league, Tournament.year, Tournament.split)
+            .join(TeamTournament, TeamTournament.tournament_id == Tournament.id)
+            .where(TeamTournament.team_id == team.id)
+            .distinct()
+        )
+        tournament_results = session.exec(tournament_statement).all()
+        
+        # Format tournament names
+        tournament_names = [
+            f"{league} {year} {split or ''}".strip()
+            for league, year, split in tournament_results
+        ]
+        
+        team_dict = team.model_dump()
+        team_dict["tournament_names"] = tournament_names
+        enriched_teams.append(TeamResponse(**team_dict))
+    
+    return enriched_teams
 
 
 @router.get("/{team_id}", response_model=TeamResponse)
