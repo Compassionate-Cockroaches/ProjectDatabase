@@ -3,13 +3,13 @@ use lol_esports_DB;
 INSERT IGNORE INTO teams (external_id, team_name)
 SELECT DISTINCT teamid, teamname
 FROM raw_match_data
-WHERE participantid NOT IN (100, 200)
+WHERE participantid BETWEEN 1 AND 10
 AND teamid IS NOT NULL;
 
 INSERT IGNORE INTO tournaments (league, year, split, playoffs)
 SELECT DISTINCT league, year, split, playoffs
 FROM raw_match_data
-WHERE participantid NOT IN (100, 200);
+WHERE participantid BETWEEN 1 AND 10;
 
 INSERT IGNORE INTO team_tournaments (team_id, tournament_id)
 SELECT DISTINCT t.id, tour.id
@@ -20,7 +20,8 @@ JOIN tournaments tour ON
     AND tour.year = rmd.year 
     AND (tour.split = rmd.split OR (tour.split IS NULL AND rmd.split IS NULL))
     AND tour.playoffs = rmd.playoffs
-where rmd.participantid NOT IN (100, 200);
+where rmd.participantid BETWEEN 1 AND 10;
+
 
 INSERT IGNORE INTO matches (external_id, tournament_id, game_number, game_length, patch, match_date, data_completeness, url)
 SELECT
@@ -38,13 +39,13 @@ JOIN tournaments tour ON
     AND tour.year = rmd.year
     AND (tour.split = rmd.split OR (tour.split IS NULL AND rmd.split IS NULL))
     AND tour.playoffs = rmd.playoffs
-WHERE rmd.participantid NOT IN (100, 200)
+WHERE rmd.participantid BETWEEN 1 AND 10
 GROUP BY rmd.gameid, tour.id;
 
 INSERT IGNORE INTO players (external_id, player_name, position)
 SELECT DISTINCT playerid, playername, position
 FROM raw_match_data
-WHERE participantid NOT IN (100, 200)
+WHERE participantid BETWEEN 1 AND 10
 AND playerid IS NOT NULL;
 
 INSERT IGNORE INTO match_player_stats
@@ -91,4 +92,4 @@ FROM raw_match_data rmd
 JOIN matches m ON m.external_id = rmd.gameid
 JOIN players p ON p.external_id = rmd.playerid
 JOIN teams t ON t.external_id = rmd.teamid
-WHERE rmd.participantid NOT IN (100, 200);
+WHERE rmd.participantid BETWEEN 1 AND 10;
