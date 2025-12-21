@@ -37,13 +37,16 @@ class TeamLeaderboardRow(BaseModel):
     losses: int
     win_rate: float
 
-class TournamentParticipationStats(BaseModel):
+class TournamentLeaderboardRow(BaseModel):
     tournament_id: str
     league: str
     year: int
     split: str
-    total_teams: int
+    metric: str
+    metric_value: float
     total_matches: int
+    total_teams: int
+    avg_game_duration: Optional[float] = None
 
 class DashboardStats(BaseModel):
     total_teams: int
@@ -267,6 +270,99 @@ async def teams_leaderboard(
     results.sort(key=lambda x: x.win_rate, reverse=True)
     return results[:limit]
 
+@router.get("/leaderboard/tournaments", response_model=List[TournamentLeaderboardRow])
+async def tournaments_leaderboard(
+    # Rankable tournament metrics (Layer 3)
+    metric: Literal["total_matches", "total_teams", "avg_game_duration"] = Query(
+        "total_matches", description="Tournament ranking metric"
+    ),
+    # Shared-category filters (Layer 2)
+    year: Optional[int] = Query(None),
+    league: Optional[str] = Query(None),
+    split: Optional[str] = Query(None),
+    playoffs: Optional[int] = Query(None),
+    patch: Optional[str] = Query(None),
+    # Controls
+    limit: int = Query(10, ge=1, le=100),
+    session: Annotated[Session, Depends(get_session)] = None,
+    current_user: Annotated[User, Depends(require_analyst)] = None,
+):
+    """
+    Tournament leaderboard
+
+    Rankable metrics:
+    - total_matches: number of matches played
+    - total_teams: number of distinct teams
+    - avg_game_duration: average match duration (seconds)
+    """
+
+    base = (
+        select(
+            Tournament.id.label("tournament_id"),
+            Tournament.league.label("league"),
+            Tournament.year.label("year"),
+            Tournament.split.label("split"),
+            func.count(func.distinct(Match.id)).label("total_matches"),
+            func.count(func.distinct(Team.id)).label("total_teams"),
+            func.avg(Match.game_duration).label("avg_game_duration"),
+        )
+        .join(Match, Match.tournament_id == Tournament.id)
+        .join(MatchPlayerStats, Match.id == MatchPlayerStats.match_id)
+        .join(Team, MatchPlayerStats.team_id == Team.id)
+        .group_by(
+            Tournament.id,
+            Tournament.league,
+            Tournament.year,
+            Tournament.split,
+        )
+    )
+
+    # Shared-category filters
+    if year is not None:
+        base = base.where(Tournament.year == year)
+    if league:
+        base = base.where(Tournament.league == league)
+    if split:
+        base = base.where(Tournament.split == split)
+    if playoffs is not None:
+        base = base.where(Tournament.playoffs == playoffs)
+    if patch:
+        base = base.where(Match.patch == patch)
+
+    rows = session.exec(base).all()
+
+    results: List[TournamentLeaderboardRow] = []
+
+    for row in rows:
+        if metric == "total_matches":
+            metric_value = row.total_matches
+        elif metric == "total_teams":
+            metric_value = row.total_teams
+        elif metric == "avg_game_duration":
+            metric_value = float(row.avg_game_duration or 0)
+        else:
+            metric_value = 0
+
+        results.append(
+            TournamentLeaderboardRow(
+                tournament_id=row.tournament_id,
+                league=row.league,
+                year=row.year,
+                split=row.split,
+                metric=metric,
+                metric_value=round(float(metric_value), 2),
+                total_matches=row.total_matches,
+                total_teams=row.total_teams,
+                avg_game_duration=(
+                    round(float(row.avg_game_duration), 2)
+                    if row.avg_game_duration is not None
+                    else None
+                ),
+            )
+        )
+
+    results.sort(key=lambda x: x.metric_value, reverse=True)
+    return results[:limit]
 
 @router.get("/dashboard", response_model=DashboardStats)
 async def get_dashboard_stats(session: Annotated[Session, Depends(get_session)] = None):
