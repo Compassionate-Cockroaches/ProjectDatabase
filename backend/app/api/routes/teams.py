@@ -57,7 +57,7 @@ async def list_teams(
 
 @router.get("/{team_id}", response_model=TeamResponse)
 async def read_team(
-    team_id: int,
+    team_id: str,
     session: Annotated[Session, Depends(get_session)],
 ):
     """Get single team by ID (Public access)"""
@@ -93,7 +93,7 @@ async def create_team(
 
 @router.put("/{team_id}", response_model=TeamResponse)
 async def update_team(
-    team_id: int,
+    team_id: str,
     team_data: TeamUpdate,
     session: Annotated[Session, Depends(get_session)],
     current_user: Annotated[User, Depends(require_admin)],
@@ -122,7 +122,7 @@ async def update_team(
 
 @router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_team(
-    team_id: int,
+    team_id: str,
     session: Annotated[Session, Depends(get_session)],
     current_user=Depends(require_admin),
 ):
