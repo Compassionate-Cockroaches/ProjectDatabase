@@ -10,11 +10,8 @@ from app.models.team import Team
 from app.models.tournament import Tournament
 from app.models.match import Match
 from app.models.match_player_stats import MatchPlayerStats
-from app.api.deps import require_analyst
-from app.models.user import User
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
-
 
 class PlayerLeaderboardRow(BaseModel):
     player_id: str
@@ -24,14 +21,21 @@ class PlayerLeaderboardRow(BaseModel):
     metric: str
     metric_value: float
 
+    tournament_label: Optional[str] = None
     total_kills: Optional[int] = None
     total_deaths: Optional[int] = None
     total_assists: Optional[int] = None
 
+    kda: Optional[float] = None
+    avg_dpm: Optional[float] = None
+    avg_cspm: Optional[float] = None
+    avg_vision: Optional[float] = None
+    win_rate: Optional[float] = None
 
 class TeamLeaderboardRow(BaseModel):
     team_id: str
     team_name: str
+    tournament_label: Optional[str] = None
     matches_played: int
     wins: int
     losses: int
@@ -42,6 +46,7 @@ class TournamentLeaderboardRow(BaseModel):
     league: str
     year: int
     split: str
+    tournament_label: Optional[str] = None
     metric: str
     metric_value: float
     total_matches: int
@@ -56,33 +61,37 @@ class DashboardStats(BaseModel):
 
 @router.get("/leaderboard/players", response_model=List[PlayerLeaderboardRow])
 async def players_leaderboard(
-    # Metric must be rankable
-    metric: Literal["kda", "dpm", "cspm", "vision", "winrate"] = Query(
-        "kda", description="Ranking metric"
-    ),
-    # Shared-category filters (dataset scope)
-    year: Optional[int] = Query(None, description="Tournament year, e.g. 2024"),
-    league: Optional[str] = Query(None, description="Tournament league code, e.g. AL, CBLOL"),
-    split: Optional[str] = Query(None, description="Split, e.g. Spring, Summer, Split 1"),
-    playoffs: Optional[int] = Query(None, description="0 or 1"),
-    patch: Optional[str] = Query(None, description="Patch, e.g. 14.3"),
+    # Rankable metric
+    metric: Literal["kda", "dpm", "cspm", "vision", "winrate"] = Query("kda"),
+    year: Optional[int] = Query(None),
+    league: Optional[str] = Query(None),
+    split: Optional[str] = Query(None),
+    playoffs: Optional[int] = Query(None),
+    patch: Optional[str] = Query(None),
     # Player-only filters
-    position: Optional[str] = Query(None, description="Player position"),
-    champion: Optional[str] = Query(None, description="Champion name, e.g. Annie"),
-    side: Optional[str] = Query(None, description="Blue or Red"),
+    position: Optional[str] = Query(None),
+    champion: Optional[str] = Query(None),
+    side: Optional[str] = Query(None),
     # Controls
     limit: int = Query(10, ge=1, le=100),
     min_games: int = Query(5, ge=1, le=100),
     session: Annotated[Session, Depends(get_session)] = None,
-    current_user: Annotated[User, Depends(require_analyst)] = None,
 ):
-    """
-    Player leaderboard
-    - Shared-category filters define dataset (year/league/split/playoffs/patch)
-    - Player-only filters further slice (position/champion/side)
-    - Metric defines ranking (kda/dpm/cspm/vision/winrate)
-    """
 
+    label_parts = []
+    if league:
+        label_parts.append(league)
+    if split:
+        label_parts.append(split)
+    if year is not None:
+        label_parts.append(str(year))
+    tournament_label = " ".join(label_parts) if label_parts else "All data"
+    if playoffs == 1:
+        tournament_label += " (Playoffs)"
+    if patch:
+        tournament_label += f" • Patch {patch}"
+
+    # Base query
     base = (
         select(
             Player.id.label("player_id"),
@@ -116,24 +125,15 @@ async def players_leaderboard(
     if patch:
         base = base.where(Match.patch == patch)
 
-    # Add metric columns
-    if metric == "kda":
-        query = base.add_columns(
-            func.sum(MatchPlayerStats.kills).label("kills"),
-            func.sum(MatchPlayerStats.deaths).label("deaths"),
-            func.sum(MatchPlayerStats.assists).label("assists"),
-        )
-    elif metric == "dpm":
-        query = base.add_columns(func.avg(MatchPlayerStats.dpm).label("avg_metric"))
-    elif metric == "cspm":
-        query = base.add_columns(func.avg(MatchPlayerStats.cspm).label("avg_metric"))
-    elif metric == "vision":
-        query = base.add_columns(func.avg(MatchPlayerStats.visionscore).label("avg_metric"))
-    elif metric == "winrate":
-        # result is 0/1 per player row; avg(result) gives win rate
-        query = base.add_columns(func.avg(cast(MatchPlayerStats.result, Integer)).label("avg_metric"))
-    else:
-        query = base  # Literal prevents this
+    query = base.add_columns(
+        func.sum(MatchPlayerStats.kills).label("kills"),
+        func.sum(MatchPlayerStats.deaths).label("deaths"),
+        func.sum(MatchPlayerStats.assists).label("assists"),
+        func.avg(MatchPlayerStats.dpm).label("avg_dpm"),
+        func.avg(MatchPlayerStats.cspm).label("avg_cspm"),
+        func.avg(MatchPlayerStats.visionscore).label("avg_vision"),
+        func.avg(cast(MatchPlayerStats.result, Integer)).label("win_rate"),
+    )
 
     query = query.having(func.count(func.distinct(MatchPlayerStats.match_id)) >= min_games)
 
@@ -141,75 +141,87 @@ async def players_leaderboard(
     results: List[PlayerLeaderboardRow] = []
 
     for row in rows:
-        if metric == "kda":
-            kills = row.kills or 0
-            deaths = row.deaths or 0
-            assists = row.assists or 0
-            denom = deaths if deaths > 0 else 1
-            kda = (kills + assists) / denom
+        kills = int(row.kills or 0)
+        deaths = int(row.deaths or 0)
+        assists = int(row.assists or 0)
+        denom = deaths if deaths > 0 else 1
+        kda = (kills + assists) / denom
 
-            results.append(
-                PlayerLeaderboardRow(
-                    player_id=row.player_id,
-                    player_name=row.player_name,
-                    position=row.position or "Unknown",
-                    games_played=row.games_played or 0,
-                    metric="kda",
-                    metric_value=round(float(kda), 2),
-                    total_kills=kills,
-                    total_deaths=deaths,
-                    total_assists=assists,
-                )
-            )
-        else:
-            # winrate should be shown as %
-            val = float(row.avg_metric or 0)
-            if metric == "winrate":
-                val *= 100.0
+        avg_dpm = float(row.avg_dpm or 0)
+        avg_cspm = float(row.avg_cspm or 0)
+        avg_vision = float(row.avg_vision or 0)
+        win_rate = float(row.win_rate or 0) * 100.0
 
-            results.append(
-                PlayerLeaderboardRow(
-                    player_id=row.player_id,
-                    player_name=row.player_name,
-                    position=row.position or "Unknown",
-                    games_played=row.games_played or 0,
-                    metric=metric,
-                    metric_value=round(val, 2),
-                )
+        # Ranking metric_value
+        if metric == "kda": metric_value = kda
+        elif metric == "dpm": metric_value = avg_dpm
+        elif metric == "cspm": metric_value = avg_cspm
+        elif metric == "vision": metric_value = avg_vision
+        elif metric == "winrate": metric_value = win_rate
+        else: metric_value = 0
+
+        results.append(
+            PlayerLeaderboardRow(
+                player_id=row.player_id,
+                player_name=row.player_name,
+                position=row.position or "Unknown",
+                games_played=int(row.games_played or 0),
+
+                metric=metric,
+                metric_value=round(float(metric_value), 2),
+
+                tournament_label=tournament_label,
+                total_kills=kills,
+                total_deaths=deaths,
+                total_assists=assists,
+
+                kda=round(float(kda), 2),
+                avg_dpm=round(avg_dpm, 2),
+                avg_cspm=round(avg_cspm, 2),
+                avg_vision=round(avg_vision, 2),
+                win_rate=round(win_rate, 2),
             )
+        )
 
     results.sort(key=lambda x: x.metric_value, reverse=True)
     return results[:limit]
 
 @router.get("/leaderboard/teams", response_model=List[TeamLeaderboardRow])
 async def teams_leaderboard(
-    # Shared-category filters
     year: Optional[int] = Query(None),
     league: Optional[str] = Query(None),
     split: Optional[str] = Query(None),
     playoffs: Optional[int] = Query(None),
-    patch: Optional[str] = Query(None, description="Patch, e.g. 14.3"),
-    # Controls
+    patch: Optional[str] = Query(None),
     limit: int = Query(10, ge=1, le=100),
     min_matches: int = Query(5, ge=1, le=100),
     session: Annotated[Session, Depends(get_session)] = None,
-    current_user: Annotated[User, Depends(require_analyst)] = None,
 ):
     """
     Team leaderboard ranked by win rate.
-    Fixes:
-    - matches_played is COUNT(DISTINCT match)
-    - wins computed per team per match (not using //5)
+    Returns supporting metrics + tournament_label so users can verify filters.
     """
 
-    # Step 1: compute team win per match (1 row per team per match)
+    # Build label so users can verify applied filters
+    label_parts = []
+    if league:
+        label_parts.append(league)
+    if split:
+        label_parts.append(split)
+    if year is not None:
+        label_parts.append(str(year))
+
+    tournament_label = " ".join(label_parts) if label_parts else "All data"
+    if playoffs == 1:
+        tournament_label += " (Playoffs)"
+    if patch:
+        tournament_label += f" • Patch {patch}"
+
     team_per_match = (
         select(
             Team.id.label("team_id"),
             Team.team_name.label("team_name"),
             Match.id.label("match_id"),
-            # If team won the match, player result=1 for its players
-            # Summing result across that team in a match should be 5 for winners, 0 for losers (normal data)
             case(
                 (func.sum(cast(MatchPlayerStats.result, Integer)) >= 3, 1),
                 else_=0,
@@ -221,7 +233,7 @@ async def teams_leaderboard(
         .group_by(Team.id, Team.team_name, Match.id)
     )
 
-    # Shared-category filters
+    # Shared filters
     if year is not None:
         team_per_match = team_per_match.where(Tournament.year == year)
     if league:
@@ -235,7 +247,6 @@ async def teams_leaderboard(
 
     subq = team_per_match.subquery()
 
-    # Step 2: aggregate per team
     base = (
         select(
             subq.c.team_id,
@@ -247,10 +258,10 @@ async def teams_leaderboard(
         .having(func.count(func.distinct(subq.c.match_id)) >= min_matches)
     )
 
-    rows = session.exec(base).all()
-    results: List[TeamLeaderboardRow] = []
+    core_rows = session.exec(base).all()
 
-    for row in rows:
+    results: List[TeamLeaderboardRow] = []
+    for row in core_rows:
         matches = int(row.matches_played or 0)
         wins = int(row.wins or 0)
         losses = matches - wins
@@ -260,6 +271,7 @@ async def teams_leaderboard(
             TeamLeaderboardRow(
                 team_id=row.team_id,
                 team_name=row.team_name,
+                tournament_label=tournament_label,
                 matches_played=matches,
                 wins=wins,
                 losses=losses,
@@ -272,11 +284,11 @@ async def teams_leaderboard(
 
 @router.get("/leaderboard/tournaments", response_model=List[TournamentLeaderboardRow])
 async def tournaments_leaderboard(
-    # Rankable tournament metrics (Layer 3)
+    # Rankable tournament metrics
     metric: Literal["total_matches", "total_teams", "avg_game_duration"] = Query(
         "total_matches", description="Tournament ranking metric"
     ),
-    # Shared-category filters (Layer 2)
+    # Shared-category filters
     year: Optional[int] = Query(None),
     league: Optional[str] = Query(None),
     split: Optional[str] = Query(None),
@@ -285,7 +297,6 @@ async def tournaments_leaderboard(
     # Controls
     limit: int = Query(10, ge=1, le=100),
     session: Annotated[Session, Depends(get_session)] = None,
-    current_user: Annotated[User, Depends(require_analyst)] = None,
 ):
     """
     Tournament leaderboard
@@ -342,13 +353,19 @@ async def tournaments_leaderboard(
             metric_value = float(row.avg_game_duration or 0)
         else:
             metric_value = 0
-
+        tournament_label = f"{row.league} {row.split} {row.year}"
+        
+        if playoffs == 1:
+            tournament_label += " (Playoffs)"
+        if patch:
+            tournament_label += f" • Patch {patch}"
         results.append(
             TournamentLeaderboardRow(
-                tournament_id=row.tournament_id,
+                 tournament_id=row.tournament_id,
                 league=row.league,
                 year=row.year,
                 split=row.split,
+                tournament_label=tournament_label,
                 metric=metric,
                 metric_value=round(float(metric_value), 2),
                 total_matches=row.total_matches,
