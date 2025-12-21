@@ -8,6 +8,10 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import UsersPage from "./pages/UsersPage";
+import TeamsPage from "./pages/TeamsPage";
+import PlayersPage from "./pages/PlayersPage";
+import TournamentsPage from "./pages/TournamentsPage";
+import MatchesPage from "./pages/MatchesPage";
 
 export function App() {
   return (
@@ -30,6 +34,10 @@ export function App() {
           >
             <Route index element={<HomePage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="teams" element={<TeamsPage />} />
+            <Route path="players" element={<PlayersPage />} />
+            <Route path="tournaments" element={<TournamentsPage />} />
+            <Route path="matches" element={<MatchesPage />} />
           </Route>
           
           {/* Catch all */}

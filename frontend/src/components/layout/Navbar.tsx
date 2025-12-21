@@ -5,6 +5,10 @@ import {
   IconLogout,
   IconUserPlus,
   IconUsers,
+  IconShield,
+  IconUser,
+  IconTrophy,
+  IconSwords,
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -51,6 +55,30 @@ export default function Navbar() {
                   <Button variant="ghost" size="sm" className="gap-2">
                     <IconUsers size={18} />
                     <span className="hidden md:inline">Users</span>
+                  </Button>
+                </Link>
+                <Link to="/teams">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <IconShield size={18} />
+                    <span className="hidden md:inline">Teams</span>
+                  </Button>
+                </Link>
+                <Link to="/players">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <IconUser size={18} />
+                    <span className="hidden md:inline">Players</span>
+                  </Button>
+                </Link>
+                <Link to="/tournaments">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <IconTrophy size={18} />
+                    <span className="hidden md:inline">Tournaments</span>
+                  </Button>
+                </Link>
+                <Link to="/matches">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <IconSwords size={18} />
+                    <span className="hidden md:inline">Matches</span>
                   </Button>
                 </Link>
 
