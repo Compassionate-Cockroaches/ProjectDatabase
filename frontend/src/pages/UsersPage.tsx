@@ -28,17 +28,17 @@ export default function UsersPage() {
   }
 
   if (error) {
-    return <div className="text-red-600">Error loading users: {error.message}</div>;
+    return <div className="text-destructive">Error loading users: {error.message}</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Users</h1>
+        <h1 className="text-3xl font-bold">Users</h1>
         <Button>Add User</Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -57,7 +57,7 @@ export default function UsersPage() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.full_name || "-"}</TableCell>
                 <TableCell>
-                  <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                  <span className="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
                     {user.role}
                   </span>
                 </TableCell>
@@ -65,8 +65,8 @@ export default function UsersPage() {
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
                       user.disabled
-                        ? "bg-red-100 text-red-800"
-                        : "bg-green-100 text-green-800"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/10 text-primary"
                     }`}
                   >
                     {user.disabled ? "Disabled" : "Active"}

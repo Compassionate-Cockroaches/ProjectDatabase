@@ -126,6 +126,12 @@ const PlayersPage: React.FC = () => {
   const hasNextPage = players && players.length === ITEMS_PER_PAGE;
   const hasPrevPage = page > 0;
 
+  // Helper function to format team names
+  const getTeamsDisplay = (teamNames?: string[]) => {
+    if (!teamNames || teamNames.length === 0) return "-";
+    return teamNames.join(", ");
+  };
+
   if (isLoading)
     return <div className="container mx-auto py-10">Loading players...</div>;
   if (isError)
@@ -218,7 +224,7 @@ const PlayersPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Position" />
           </SelectTrigger>
           <SelectContent>
@@ -243,7 +249,8 @@ const PlayersPage: React.FC = () => {
             <TableRow>
               <TableHead>Player Name</TableHead>
               <TableHead>Position</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead>Team Played</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -254,6 +261,7 @@ const PlayersPage: React.FC = () => {
                     {player.player_name}
                   </TableCell>
                   <TableCell>{player.position || "-"}</TableCell>
+                  <TableCell>{getTeamsDisplay(player.team_names)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -284,7 +292,7 @@ const PlayersPage: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={4}
                   className="text-center text-muted-foreground"
                 >
                   No players found

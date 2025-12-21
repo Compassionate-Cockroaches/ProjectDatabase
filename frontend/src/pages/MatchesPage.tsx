@@ -83,6 +83,17 @@ const MatchesPage: React.FC = () => {
       : tournamentId;
   };
 
+  // Helper functions to get team names
+  const getTeamA = (teamNames?: string[]) => {
+    if (!teamNames || teamNames.length === 0) return "-";
+    return teamNames[0] || "-";
+  };
+
+  const getTeamB = (teamNames?: string[]) => {
+    if (!teamNames || teamNames.length < 2) return "-";
+    return teamNames[1] || "-";
+  };
+
   if (isLoading) return <div className="container mx-auto py-10">Loading matches...</div>;
   if (isError) return <div className="container mx-auto py-10">Error loading matches.</div>;
 
@@ -194,6 +205,8 @@ const MatchesPage: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Team A</TableHead>
+              <TableHead>Team B</TableHead>
               <TableHead>Tournament</TableHead>
               <TableHead>Game #</TableHead>
               <TableHead>Patch</TableHead>
@@ -205,6 +218,8 @@ const MatchesPage: React.FC = () => {
             {matches && matches.length > 0 ? (
               matches.map((match) => (
                 <TableRow key={match.id}>
+                  <TableCell className="font-semibold">{getTeamA(match.team_names)}</TableCell>
+                  <TableCell className="font-semibold">{getTeamB(match.team_names)}</TableCell>
                   <TableCell className="font-medium">{getTournamentName(match.tournament_id)}</TableCell>
                   <TableCell>{match.game_number || "-"}</TableCell>
                   <TableCell>{match.patch || "-"}</TableCell>
@@ -240,7 +255,7 @@ const MatchesPage: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   No matches found
                 </TableCell>
               </TableRow>

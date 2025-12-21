@@ -68,6 +68,12 @@ const TeamsPage: React.FC = () => {
   const hasNextPage = teams && teams.length === ITEMS_PER_PAGE;
   const hasPrevPage = page > 0;
 
+  // Helper function to format tournament names
+  const getTournamentsDisplay = (tournamentNames?: string[]) => {
+    if (!tournamentNames || tournamentNames.length === 0) return "-";
+    return tournamentNames.join(", ");
+  };
+
   if (isLoading) return <div className="container mx-auto py-10">Loading teams...</div>;
   if (isError) return <div className="container mx-auto py-10">Error loading teams.</div>;
 
@@ -129,6 +135,7 @@ const TeamsPage: React.FC = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Team Name</TableHead>
+              <TableHead>Tournaments Played</TableHead>
               <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,6 +144,7 @@ const TeamsPage: React.FC = () => {
               teams.map((team) => (
                 <TableRow key={team.id}>
                   <TableCell className="font-medium">{team.team_name}</TableCell>
+                  <TableCell>{getTournamentsDisplay(team.tournament_names)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -163,7 +171,7 @@ const TeamsPage: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground">
+                <TableCell colSpan={3} className="text-center text-muted-foreground">
                   No teams found
                 </TableCell>
               </TableRow>
