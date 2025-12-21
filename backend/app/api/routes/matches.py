@@ -28,10 +28,12 @@ async def list_matches(
     tournament_id: str = Query(None, description="Filter by tournament"),
     date_from: date = Query(None, description="Filter by start date"),
     date_to: date = Query(None, description="Filter by end date"),
+    sort_by: str = Query("match_date", description="Sort by field (match_date, game_length, patch)"),
+    sort_order: str = Query("desc", description="Sort order (asc, desc)"),
     session: Annotated[Session, Depends(get_session)] = None,
 ):
     """Get all matches (Public access)"""
-    statement = select(Match).offset(skip).limit(limit)
+    statement = select(Match)
 
     # Add filters
     if tournament_id:
@@ -41,8 +43,18 @@ async def list_matches(
     if date_to:
         statement = statement.where(Match.match_date <= date_to)
 
-    # Order by date descending
-    statement = statement.order_by(Match.match_date.desc())
+    # Add sorting
+    if sort_by:
+        sort_column = getattr(Match, sort_by, Match.match_date)
+        if sort_order.lower() == "desc":
+            statement = statement.order_by(sort_column.desc(), Match.game_number.asc())
+        else:
+            statement = statement.order_by(sort_column.asc(), Match.game_number.asc())
+    else:
+        statement = statement.order_by(Match.match_date.asc(), Match.game_number.dsc())
+
+    # Add pagination
+    statement = statement.offset(skip).limit(limit)
 
     matches = session.exec(statement).all()
     

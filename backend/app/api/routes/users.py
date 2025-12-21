@@ -26,11 +26,24 @@ async def read_own_items(
 async def read_users(
     skip: int = 0,
     limit: int = 100,
+    sort_by: str = "username",
+    sort_order: str = "asc",
     session: Annotated[Session, Depends(get_session)] = None,
     current_user: Annotated[User, Depends(require_admin)] = None
 ):
     """Get all users (Admin only)"""
-    statement = select(User).offset(skip).limit(limit)
+    statement = select(User)
+    
+    # Add sorting
+    sort_column = getattr(User, sort_by, User.username)
+    if sort_order.lower() == "desc":
+        statement = statement.order_by(sort_column.desc())
+    else:
+        statement = statement.order_by(sort_column.asc())
+    
+    # Add pagination
+    statement = statement.offset(skip).limit(limit)
+    
     users = session.exec(statement).all()
     return users
 

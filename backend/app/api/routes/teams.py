@@ -22,14 +22,26 @@ async def list_teams(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     search: str = Query(None, description="Search by team name"),
+    sort_by: str = Query("team_name", description="Sort by field (team_name)"),
+    sort_order: str = Query("asc", description="Sort order (asc, desc)"),
     session: Annotated[Session, Depends(get_session)] = None,
 ):
     """Get all teams (Public access)"""
-    statement = select(Team).offset(skip).limit(limit)
+    statement = select(Team)
 
     # Add search filter if provided
     if search:
         statement = statement.where(Team.team_name.contains(search))
+
+    # Add sorting
+    sort_column = getattr(Team, sort_by, Team.team_name)
+    if sort_order.lower() == "desc":
+        statement = statement.order_by(sort_column.desc())
+    else:
+        statement = statement.order_by(sort_column.asc())
+
+    # Add pagination
+    statement = statement.offset(skip).limit(limit)
 
     teams = session.exec(statement).all()
     return teams

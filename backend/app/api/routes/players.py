@@ -29,16 +29,28 @@ async def list_players(
         None, description="Filter by position (Top, Jungle, Mid, Bot, Support)"
     ),
     search: str = Query(None, description="Search by player name"),
+    sort_by: str = Query("player_name", description="Sort by field (player_name, position)"),
+    sort_order: str = Query("asc", description="Sort order (asc, desc)"),
     session: Annotated[Session, Depends(get_session)] = None,
 ):
     """Get all players (Public access)"""
-    statement = select(Player).offset(skip).limit(limit)
+    statement = select(Player)
 
     # Add filters
     if position:
         statement = statement.where(Player.position == position)
     if search:
         statement = statement.where(Player.player_name.contains(search))
+
+    # Add sorting
+    sort_column = getattr(Player, sort_by, Player.player_name)
+    if sort_order.lower() == "desc":
+        statement = statement.order_by(sort_column.desc())
+    else:
+        statement = statement.order_by(sort_column.asc())
+
+    # Add pagination
+    statement = statement.offset(skip).limit(limit)
 
     players = session.exec(statement).all()
     return players

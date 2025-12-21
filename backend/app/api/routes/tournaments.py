@@ -29,10 +29,12 @@ async def list_tournaments(
     year: int = Query(None, description="Filter by year"),
     league: str = Query(None, description="Filter by league (LCK, LPL, LEC, etc.)"),
     playoffs: bool = Query(None, description="Filter by playoffs"),
+    sort_by: str = Query("year", description="Sort by field (year, league, split)"),
+    sort_order: str = Query("desc", description="Sort order (asc, desc)"),
     session: Annotated[Session, Depends(get_session)] = None,
 ):
     """Get all tournaments (Public access)"""
-    statement = select(Tournament).offset(skip).limit(limit)
+    statement = select(Tournament)
 
     # Add filters
     if year:
@@ -42,8 +44,15 @@ async def list_tournaments(
     if playoffs is not None:
         statement = statement.where(Tournament.playoffs == playoffs)
 
-    # Order by year and split
-    statement = statement.order_by(Tournament.year.desc(), Tournament.split)
+    # Add sorting
+    sort_column = getattr(Tournament, sort_by, Tournament.year)
+    if sort_order.lower() == "desc":
+        statement = statement.order_by(sort_column.desc())
+    else:
+        statement = statement.order_by(sort_column.asc())
+
+    # Add pagination
+    statement = statement.offset(skip).limit(limit)
 
     tournaments = session.exec(statement).all()
     return tournaments
@@ -143,23 +152,34 @@ async def get_tournament_teams(
     session: Annotated[Session, Depends(get_session)],
 ):
     """Get all teams participating in tournament with standings"""
-    from sqlmodel import Integer, cast
+    from sqlmodel import Integer, case, cast, distinct
     
+    # Create a subquery to get unique matches with their results per team
+    # This ensures we count each match only once per team, not once per player
+    match_results_subquery = (
+        select(
+            MatchPlayerStats.team_id,
+            MatchPlayerStats.match_id,
+            func.max(cast(MatchPlayerStats.result, Integer)).label("team_result")
+        )
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .where(Match.tournament_id == tournament_id)
+        .group_by(MatchPlayerStats.team_id, MatchPlayerStats.match_id)
+    ).subquery()
+    
+    # Now aggregate team stats from the match-level results
     statement = (
         select(
             Team.id,
             Team.team_name,
-            TeamTournament.result,
-            func.count(MatchPlayerStats.match_id.distinct()).label("games_played"),
-            func.sum(cast(MatchPlayerStats.result, Integer)).label("wins"),
+            func.count(match_results_subquery.c.match_id).label("games_played"),
+            func.sum(match_results_subquery.c.team_result).label("wins"),
         )
         .join(TeamTournament, TeamTournament.team_id == Team.id)
-        .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
-        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .join(match_results_subquery, match_results_subquery.c.team_id == Team.id)
         .where(TeamTournament.tournament_id == tournament_id)
-        .where(Match.tournament_id == tournament_id)
-        .group_by(Team.id, Team.team_name, TeamTournament.result)
-        .order_by(func.sum(cast(MatchPlayerStats.result, Integer)).desc())
+        .group_by(Team.id, Team.team_name)
+        .order_by(func.sum(match_results_subquery.c.team_result).desc())
     )
     
     results = session.exec(statement).all()
@@ -174,7 +194,6 @@ async def get_tournament_teams(
         teams.append({
             "team_id": result.id,
             "team_name": result.team_name,
-            "result": result.result,
             "games_played": games,
             "wins": wins,
             "losses": losses,
@@ -195,7 +214,7 @@ async def get_tournament_matches(
     statement = (
         select(Match)
         .where(Match.tournament_id == tournament_id)
-        .order_by(Match.match_date.desc())
+        .order_by(Match.match_date.desc(), Match.game_number.desc())
         .offset(skip)
         .limit(limit)
     )
