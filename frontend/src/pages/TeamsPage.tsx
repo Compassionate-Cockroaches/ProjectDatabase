@@ -1,14 +1,43 @@
-import React, { useState } from "react";
-import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam } from "@/hooks/useTeams";
-import { useDebounce } from "@/hooks/useDebounce";
-import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { IconEdit, IconTrash, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useDebounce } from "@/hooks/useDebounce";
+import {
+  useCreateTeam,
+  useDeleteTeam,
+  useTeams,
+  useUpdateTeam,
+} from "@/hooks/useTeams";
+import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
+import { IconEdit, IconPlus, IconSearch, IconTrash } from "@tabler/icons-react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -16,13 +45,17 @@ const TeamsPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  
-  const { data: teams, isLoading, isError } = useTeams({ 
-    skip: page * ITEMS_PER_PAGE, 
+
+  const {
+    data: teams,
+    isLoading,
+    isError,
+  } = useTeams({
+    skip: page * ITEMS_PER_PAGE,
     limit: ITEMS_PER_PAGE,
-    search: debouncedSearch || undefined
+    search: debouncedSearch || undefined,
   });
-  
+
   const createMutation = useCreateTeam();
   const updateMutation = useUpdateTeam();
   const deleteMutation = useDeleteTeam();
@@ -74,8 +107,10 @@ const TeamsPage: React.FC = () => {
     return tournamentNames.join(", ");
   };
 
-  if (isLoading) return <div className="container mx-auto py-10">Loading teams...</div>;
-  if (isError) return <div className="container mx-auto py-10">Error loading teams.</div>;
+  if (isLoading)
+    return <div className="container mx-auto py-10">Loading teams...</div>;
+  if (isError)
+    return <div className="container mx-auto py-10">Error loading teams.</div>;
 
   return (
     <div className="container mx-auto py-10">
@@ -100,7 +135,9 @@ const TeamsPage: React.FC = () => {
                 <Input
                   id="newTeamName"
                   value={newTeam.team_name}
-                  onChange={(e) => setNewTeam({ ...newTeam, team_name: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeam({ ...newTeam, team_name: e.target.value })
+                  }
                   className="col-span-3"
                   required
                 />
@@ -117,7 +154,10 @@ const TeamsPage: React.FC = () => {
 
       <div className="mb-4 flex gap-4">
         <div className="relative max-w-sm flex-1">
-          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <IconSearch
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={18}
+          />
           <Input
             placeholder="Search teams..."
             value={search}
@@ -135,7 +175,6 @@ const TeamsPage: React.FC = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Team Name</TableHead>
-              <TableHead>Tournaments Played</TableHead>
               <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -143,8 +182,14 @@ const TeamsPage: React.FC = () => {
             {teams && teams.length > 0 ? (
               teams.map((team) => (
                 <TableRow key={team.id}>
-                  <TableCell className="font-medium">{team.team_name}</TableCell>
-                  <TableCell>{getTournamentsDisplay(team.tournament_names)}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      to={`/teams/${team.id}`}
+                      className="hover:text-primary hover:underline transition-colors"
+                    >
+                      {team.team_name}
+                    </Link>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -171,7 +216,10 @@ const TeamsPage: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={2}
+                  className="text-center text-muted-foreground"
+                >
                   No teams found
                 </TableCell>
               </TableRow>
@@ -189,9 +237,7 @@ const TeamsPage: React.FC = () => {
         >
           Previous
         </Button>
-        <div className="text-sm text-muted-foreground">
-          Page {page + 1}
-        </div>
+        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
         <Button
           variant="outline"
           size="sm"
@@ -215,7 +261,9 @@ const TeamsPage: React.FC = () => {
               <Input
                 id="editTeamName"
                 value={editTeam.team_name ?? ""}
-                onChange={(e) => setEditTeam({ ...editTeam, team_name: e.target.value })}
+                onChange={(e) =>
+                  setEditTeam({ ...editTeam, team_name: e.target.value })
+                }
                 className="col-span-3"
                 required
               />
@@ -229,17 +277,24 @@ const TeamsPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the team "{teamToDelete?.team_name}". This action cannot be undone.
+              This will permanently delete the team "{teamToDelete?.team_name}".
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

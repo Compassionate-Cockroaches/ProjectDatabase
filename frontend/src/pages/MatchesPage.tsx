@@ -1,29 +1,74 @@
-import React, { useState } from "react";
-import { useMatches, useCreateMatch, useUpdateMatch, useDeleteMatch } from "@/hooks/useMatches";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useCreateMatch,
+  useDeleteMatch,
+  useMatches,
+  useUpdateMatch,
+} from "@/hooks/useMatches";
 import { useTournaments } from "@/hooks/useTournaments";
 import type { Match, MatchCreate, MatchUpdate } from "@/types/match";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconEdit, IconTrash, IconPlus, IconX, IconFilter } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconFilter,
+  IconPlus,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 
 const MatchesPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [tournamentFilter, setTournamentFilter] = useState<string>("");
-  
-  const { data: matches, isLoading, isError } = useMatches({ 
-    skip: page * ITEMS_PER_PAGE, 
+
+  const {
+    data: matches,
+    isLoading,
+    isError,
+  } = useMatches({
+    skip: page * ITEMS_PER_PAGE,
     limit: ITEMS_PER_PAGE,
-    tournament_id: tournamentFilter || undefined
+    tournament_id: tournamentFilter || undefined,
   });
   const { data: tournaments } = useTournaments({ limit: 100 }); // Get more tournaments for filter
-  
+
   const createMutation = useCreateMatch();
   const updateMutation = useUpdateMatch();
   const deleteMutation = useDeleteMatch();
@@ -46,7 +91,10 @@ const MatchesPage: React.FC = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentMatch) {
-      await updateMutation.mutateAsync({ id: currentMatch.id, data: editMatch });
+      await updateMutation.mutateAsync({
+        id: currentMatch.id,
+        data: editMatch,
+      });
       setIsEditModalOpen(false);
       setCurrentMatch(null);
       setEditMatch({});
@@ -78,8 +126,10 @@ const MatchesPage: React.FC = () => {
   // Helper function to get tournament display name
   const getTournamentName = (tournamentId: string) => {
     const tournament = tournaments?.find((t) => t.id === tournamentId);
-    return tournament 
-      ? `${tournament.league} ${tournament.year} ${tournament.split || ""}`.trim()
+    return tournament
+      ? `${tournament.league} ${tournament.year} ${
+          tournament.split || ""
+        }`.trim()
       : tournamentId;
   };
 
@@ -94,8 +144,12 @@ const MatchesPage: React.FC = () => {
     return teamNames[1] || "-";
   };
 
-  if (isLoading) return <div className="container mx-auto py-10">Loading matches...</div>;
-  if (isError) return <div className="container mx-auto py-10">Error loading matches.</div>;
+  if (isLoading)
+    return <div className="container mx-auto py-10">Loading matches...</div>;
+  if (isError)
+    return (
+      <div className="container mx-auto py-10">Error loading matches.</div>
+    );
 
   return (
     <div className="container mx-auto py-10">
@@ -119,7 +173,9 @@ const MatchesPage: React.FC = () => {
                 </Label>
                 <Select
                   value={newMatch.tournament_id}
-                  onValueChange={(value) => setNewMatch({ ...newMatch, tournament_id: value })}
+                  onValueChange={(value) =>
+                    setNewMatch({ ...newMatch, tournament_id: value })
+                  }
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select tournament" />
@@ -141,7 +197,14 @@ const MatchesPage: React.FC = () => {
                   id="newGameNumber"
                   type="number"
                   value={newMatch.game_number || ""}
-                  onChange={(e) => setNewMatch({ ...newMatch, game_number: e.target.value ? parseInt(e.target.value) : undefined })}
+                  onChange={(e) =>
+                    setNewMatch({
+                      ...newMatch,
+                      game_number: e.target.value
+                        ? parseInt(e.target.value)
+                        : undefined,
+                    })
+                  }
                   className="col-span-3"
                 />
               </div>
@@ -152,7 +215,9 @@ const MatchesPage: React.FC = () => {
                 <Input
                   id="newPatch"
                   value={newMatch.patch || ""}
-                  onChange={(e) => setNewMatch({ ...newMatch, patch: e.target.value })}
+                  onChange={(e) =>
+                    setNewMatch({ ...newMatch, patch: e.target.value })
+                  }
                   className="col-span-3"
                 />
               </div>
@@ -164,7 +229,9 @@ const MatchesPage: React.FC = () => {
                   id="newMatchDate"
                   type="date"
                   value={newMatch.match_date || ""}
-                  onChange={(e) => setNewMatch({ ...newMatch, match_date: e.target.value })}
+                  onChange={(e) =>
+                    setNewMatch({ ...newMatch, match_date: e.target.value })
+                  }
                   className="col-span-3"
                 />
               </div>
@@ -179,7 +246,13 @@ const MatchesPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex gap-4">
-        <Select value={tournamentFilter} onValueChange={(value) => { setTournamentFilter(value); setPage(0); }}>
+        <Select
+          value={tournamentFilter}
+          onValueChange={(value) => {
+            setTournamentFilter(value);
+            setPage(0);
+          }}
+        >
           <SelectTrigger className="w-[280px]">
             <IconFilter className="mr-2" size={16} />
             <SelectValue placeholder="Filter by Tournament" />
@@ -207,21 +280,34 @@ const MatchesPage: React.FC = () => {
             <TableRow>
               <TableHead>Team A</TableHead>
               <TableHead>Team B</TableHead>
-              <TableHead>Tournament</TableHead>
               <TableHead>Game #</TableHead>
+              <TableHead>Tournament</TableHead>
               <TableHead>Patch</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {matches && matches.length > 0 ? (
               matches.map((match) => (
                 <TableRow key={match.id}>
-                  <TableCell className="font-semibold">{getTeamA(match.team_names)}</TableCell>
-                  <TableCell className="font-semibold">{getTeamB(match.team_names)}</TableCell>
-                  <TableCell className="font-medium">{getTournamentName(match.tournament_id)}</TableCell>
-                  <TableCell>{match.game_number || "-"}</TableCell>
+                  <TableCell className="font-semibold">
+                    {getTeamA(match.team_names)}
+                  </TableCell>
+                  <TableCell className="font-semibold">
+                    {getTeamB(match.team_names)}
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      to={`/matches/${match.id}`}
+                      className="hover:text-primary hover:underline transition-colors"
+                    >
+                      {match.game_number || "-"}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {getTournamentName(match.tournament_id)}
+                  </TableCell>
                   <TableCell>{match.patch || "-"}</TableCell>
                   <TableCell>{match.match_date || "-"}</TableCell>
                   <TableCell className="text-right">
@@ -255,7 +341,10 @@ const MatchesPage: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="text-center text-muted-foreground"
+                >
                   No matches found
                 </TableCell>
               </TableRow>
@@ -273,9 +362,7 @@ const MatchesPage: React.FC = () => {
         >
           Previous
         </Button>
-        <div className="text-sm text-muted-foreground">
-          Page {page + 1}
-        </div>
+        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
         <Button
           variant="outline"
           size="sm"
@@ -298,7 +385,9 @@ const MatchesPage: React.FC = () => {
               </Label>
               <Select
                 value={editMatch.tournament_id}
-                onValueChange={(value) => setEditMatch({ ...editMatch, tournament_id: value })}
+                onValueChange={(value) =>
+                  setEditMatch({ ...editMatch, tournament_id: value })
+                }
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select tournament" />
@@ -320,7 +409,14 @@ const MatchesPage: React.FC = () => {
                 id="editGameNumber"
                 type="number"
                 value={editMatch.game_number ?? ""}
-                onChange={(e) => setEditMatch({ ...editMatch, game_number: e.target.value ? parseInt(e.target.value) : undefined })}
+                onChange={(e) =>
+                  setEditMatch({
+                    ...editMatch,
+                    game_number: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
+                  })
+                }
                 className="col-span-3"
               />
             </div>
@@ -331,7 +427,9 @@ const MatchesPage: React.FC = () => {
               <Input
                 id="editPatch"
                 value={editMatch.patch ?? ""}
-                onChange={(e) => setEditMatch({ ...editMatch, patch: e.target.value })}
+                onChange={(e) =>
+                  setEditMatch({ ...editMatch, patch: e.target.value })
+                }
                 className="col-span-3"
               />
             </div>
@@ -343,7 +441,9 @@ const MatchesPage: React.FC = () => {
                 id="editMatchDate"
                 type="date"
                 value={editMatch.match_date ?? ""}
-                onChange={(e) => setEditMatch({ ...editMatch, match_date: e.target.value })}
+                onChange={(e) =>
+                  setEditMatch({ ...editMatch, match_date: e.target.value })
+                }
                 className="col-span-3"
               />
             </div>
@@ -356,17 +456,27 @@ const MatchesPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the match from "{matchToDelete ? getTournamentName(matchToDelete.tournament_id) : ""}". This action cannot be undone.
+              This will permanently delete the match from "
+              {matchToDelete
+                ? getTournamentName(matchToDelete.tournament_id)
+                : ""}
+              ". This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

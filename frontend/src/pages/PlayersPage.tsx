@@ -50,6 +50,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 const POSITIONS = ["Top", "Jungle", "Mid", "Bot", "Support"];
@@ -249,7 +250,6 @@ const PlayersPage: React.FC = () => {
             <TableRow>
               <TableHead>Player Name</TableHead>
               <TableHead>Position</TableHead>
-              <TableHead>Team Played</TableHead>
               <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -258,10 +258,14 @@ const PlayersPage: React.FC = () => {
               players.map((player) => (
                 <TableRow key={player.id}>
                   <TableCell className="font-medium">
-                    {player.player_name}
+                    <Link
+                      to={`/players/${player.id}`}
+                      className="hover:text-primary hover:underline transition-colors"
+                    >
+                      {player.player_name}
+                    </Link>
                   </TableCell>
                   <TableCell>{player.position || "-"}</TableCell>
-                  <TableCell>{getTeamsDisplay(player.team_names)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -292,7 +296,7 @@ const PlayersPage: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={3}
                   className="text-center text-muted-foreground"
                 >
                   No players found
