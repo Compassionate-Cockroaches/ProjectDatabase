@@ -5,8 +5,8 @@ from sqlmodel import Session, select
 
 from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
-from app.models.user import User
 from app.models.team import Team
+from app.models.user import User
 from app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
@@ -59,7 +59,7 @@ async def create_team(
 
     # Create team
     # Admin-created team → external_id is ALWAYS NULL
-    team = Team(team_name=team_data.team_name, external_id=None)
+    team = Team(team_name=team_data.team_name, external_id="UNOFFICIAL")
     session.add(team)
     session.commit()
     session.refresh(team)

@@ -96,7 +96,11 @@ async def create_player(
 ):
     """Create new player (Admin only)"""
     # Create player
-    db_player = Player(**player_data.model_dump())
+    db_player = Player(
+        player_name=player_data.player_name,
+        position=player_data.position,
+        external_id="UNOFFICIAL",
+    )
     session.add(db_player)
     session.commit()
     session.refresh(db_player)
