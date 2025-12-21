@@ -2,7 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { teamService } from "../services/teamServices";
 import type { TeamCreate, TeamUpdate } from "../types/team";
 
-export const useTeams = (params?: { skip?: number; limit?: number; search?: string }) => {
+export const useTeams = (params?: { 
+  skip?: number; 
+  limit?: number; 
+  search?: string;
+  sort_by?: string;
+  sort_order?: string;
+}) => {
   return useQuery({
     queryKey: ["teams", params],
     queryFn: () => teamService.getAll(params),

@@ -2,7 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { matchService } from "@/services/matchServices";
 import type { MatchCreate, MatchUpdate } from "@/types/match";
 
-export const useMatches = (params?: { skip?: number; limit?: number; tournament_id?: string }) => {
+export const useMatches = (params?: { 
+  skip?: number; 
+  limit?: number; 
+  tournament_id?: string;
+  date_from?: string;
+  date_to?: string;
+  sort_by?: string;
+  sort_order?: string;
+}) => {
   return useQuery({
     queryKey: ["matches", params],
     queryFn: () => matchService.getAll(params),

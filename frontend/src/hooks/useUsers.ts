@@ -2,10 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "@/services/userServices";
 import type { UserCreate, UserUpdate } from "../types/user";
 
-export const useUsers = () => {
+export const useUsers = (params?: { 
+  skip?: number; 
+  limit?: number;
+  sort_by?: string;
+  sort_order?: string;
+}) => {
   return useQuery({
-    queryKey: ["users"],
-    queryFn: userService.getAll,
+    queryKey: ["users", params],
+    queryFn: () => userService.getAll(params),
   });
 };
 

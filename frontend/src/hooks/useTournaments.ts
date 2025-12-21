@@ -2,7 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tournamentService } from "@/services/tournamentServices";
 import type { TournamentCreate, TournamentUpdate } from "@/types/tournament";
 
-export const useTournaments = (params?: { skip?: number; limit?: number; year?: number; league?: string; playoffs?: boolean }) => {
+export const useTournaments = (params?: { 
+  skip?: number; 
+  limit?: number; 
+  year?: number; 
+  league?: string; 
+  playoffs?: boolean;
+  sort_by?: string;
+  sort_order?: string;
+}) => {
   return useQuery({
     queryKey: ["tournaments", params],
     queryFn: () => tournamentService.getAll(params),
