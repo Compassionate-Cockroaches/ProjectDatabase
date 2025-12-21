@@ -5,6 +5,7 @@ import type { Match, MatchCreate, MatchUpdate } from "@/types/match";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,7 +30,9 @@ const MatchesPage: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentMatch, setCurrentMatch] = useState<Match | null>(null);
+  const [matchToDelete, setMatchToDelete] = useState<Match | null>(null);
   const [newMatch, setNewMatch] = useState<MatchCreate>({ tournament_id: "" });
   const [editMatch, setEditMatch] = useState<MatchUpdate>({});
 
@@ -50,9 +53,16 @@ const MatchesPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this match?")) {
-      await deleteMutation.mutateAsync(id);
+  const handleDeleteClick = (match: Match) => {
+    setMatchToDelete(match);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (matchToDelete) {
+      await deleteMutation.mutateAsync(matchToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setMatchToDelete(null);
     }
   };
 
@@ -159,7 +169,7 @@ const MatchesPage: React.FC = () => {
 
       <div className="mb-4 flex gap-4">
         <Select value={tournamentFilter} onValueChange={(value) => { setTournamentFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-70">
+          <SelectTrigger className="w-[280px]">
             <IconFilter className="mr-2" size={16} />
             <SelectValue placeholder="Filter by Tournament" />
           </SelectTrigger>
@@ -188,7 +198,7 @@ const MatchesPage: React.FC = () => {
               <TableHead>Game #</TableHead>
               <TableHead>Patch</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className="text-right w-25">Actions</TableHead>
+              <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -220,7 +230,7 @@ const MatchesPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(match.id)}
+                        onClick={() => handleDeleteClick(match)}
                       >
                         <IconTrash size={18} className="text-destructive" />
                       </Button>
@@ -330,6 +340,23 @@ const MatchesPage: React.FC = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the match from "{matchToDelete ? getTournamentName(matchToDelete.tournament_id) : ""}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

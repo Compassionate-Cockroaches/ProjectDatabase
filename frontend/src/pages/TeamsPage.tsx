@@ -5,6 +5,7 @@ import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { IconEdit, IconTrash, IconPlus, IconSearch } from "@tabler/icons-react";
@@ -28,7 +29,9 @@ const TeamsPage: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
   const [newTeam, setNewTeam] = useState<TeamCreate>({ team_name: "" });
   const [editTeam, setEditTeam] = useState<TeamUpdate>({});
 
@@ -49,9 +52,16 @@ const TeamsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this team?")) {
-      await deleteMutation.mutateAsync(id);
+  const handleDeleteClick = (team: Team) => {
+    setTeamToDelete(team);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (teamToDelete) {
+      await deleteMutation.mutateAsync(teamToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setTeamToDelete(null);
     }
   };
 
@@ -143,7 +153,7 @@ const TeamsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(team.id)}
+                        onClick={() => handleDeleteClick(team)}
                       >
                         <IconTrash size={18} className="text-destructive" />
                       </Button>
@@ -210,6 +220,23 @@ const TeamsPage: React.FC = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the team "{teamToDelete?.team_name}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

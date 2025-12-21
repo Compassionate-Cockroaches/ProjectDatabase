@@ -1,39 +1,106 @@
-import React, { useState } from "react";
-import { useTournaments, useCreateTournament, useUpdateTournament, useDeleteTournament } from "@/hooks/useTournaments";
-import type { Tournament, TournamentCreate, TournamentUpdate } from "@/types/tournament";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconEdit, IconTrash, IconPlus, IconX, IconFilter } from "@tabler/icons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useCreateTournament,
+  useDeleteTournament,
+  useTournaments,
+  useUpdateTournament,
+} from "@/hooks/useTournaments";
+import type {
+  Tournament,
+  TournamentCreate,
+  TournamentUpdate,
+} from "@/types/tournament";
+import {
+  IconEdit,
+  IconFilter,
+  IconPlus,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
+import React, { useState } from "react";
 
 const ITEMS_PER_PAGE = 10;
-const LEAGUES = ["LCK", "LPL", "LEC", "LCS", "PCS", "VCS", "CBLOL", "LLA", "LJL", "LCO"];
+const LEAGUES = [
+  "LCK",
+  "LPL",
+  "LEC",
+  "LCS",
+  "PCS",
+  "VCS",
+  "CBLOL",
+  "LLA",
+  "LJL",
+  "LCO",
+];
 
 const TournamentsPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [yearFilter, setYearFilter] = useState<string>("");
   const [leagueFilter, setLeagueFilter] = useState<string>("");
   const [playoffsFilter, setPlayoffsFilter] = useState<string>("");
-  
-  const { data: tournaments, isLoading, isError } = useTournaments({ 
-    skip: page * ITEMS_PER_PAGE, 
+
+  const {
+    data: tournaments,
+    isLoading,
+    isError,
+  } = useTournaments({
+    skip: page * ITEMS_PER_PAGE,
     limit: ITEMS_PER_PAGE,
     year: yearFilter ? parseInt(yearFilter) : undefined,
     league: leagueFilter || undefined,
-    playoffs: playoffsFilter ? playoffsFilter === "true" : undefined
+    playoffs: playoffsFilter ? playoffsFilter === "true" : undefined,
   });
-  
+
   const createMutation = useCreateTournament();
   const updateMutation = useUpdateTournament();
   const deleteMutation = useDeleteTournament();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentTournament, setCurrentTournament] = useState<Tournament | null>(null);
-  const [newTournament, setNewTournament] = useState<TournamentCreate>({ league: "", year: new Date().getFullYear() });
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentTournament, setCurrentTournament] = useState<Tournament | null>(
+    null
+  );
+  const [tournamentToDelete, setTournamentToDelete] = useState<Tournament | null>(null);
+  const [newTournament, setNewTournament] = useState<TournamentCreate>({
+    league: "",
+    year: new Date().getFullYear(),
+  });
   const [editTournament, setEditTournament] = useState<TournamentUpdate>({});
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -46,16 +113,26 @@ const TournamentsPage: React.FC = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentTournament) {
-      await updateMutation.mutateAsync({ id: currentTournament.id, data: editTournament });
+      await updateMutation.mutateAsync({
+        id: currentTournament.id,
+        data: editTournament,
+      });
       setIsEditModalOpen(false);
       setCurrentTournament(null);
       setEditTournament({});
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this tournament?")) {
-      await deleteMutation.mutateAsync(id);
+  const handleDeleteClick = (tournament: Tournament) => {
+    setTournamentToDelete(tournament);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (tournamentToDelete) {
+      await deleteMutation.mutateAsync(tournamentToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setTournamentToDelete(null);
     }
   };
 
@@ -74,8 +151,14 @@ const TournamentsPage: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear - i);
 
-  if (isLoading) return <div className="container mx-auto py-10">Loading tournaments...</div>;
-  if (isError) return <div className="container mx-auto py-10">Error loading tournaments.</div>;
+  if (isLoading)
+    return (
+      <div className="container mx-auto py-10">Loading tournaments...</div>
+    );
+  if (isError)
+    return (
+      <div className="container mx-auto py-10">Error loading tournaments.</div>
+    );
 
   return (
     <div className="container mx-auto py-10">
@@ -99,7 +182,9 @@ const TournamentsPage: React.FC = () => {
                 </Label>
                 <Select
                   value={newTournament.league}
-                  onValueChange={(value) => setNewTournament({ ...newTournament, league: value })}
+                  onValueChange={(value) =>
+                    setNewTournament({ ...newTournament, league: value })
+                  }
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select league" />
@@ -121,7 +206,12 @@ const TournamentsPage: React.FC = () => {
                   id="newYear"
                   type="number"
                   value={newTournament.year}
-                  onChange={(e) => setNewTournament({ ...newTournament, year: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setNewTournament({
+                      ...newTournament,
+                      year: parseInt(e.target.value),
+                    })
+                  }
                   className="col-span-3"
                   required
                 />
@@ -133,7 +223,12 @@ const TournamentsPage: React.FC = () => {
                 <Input
                   id="newSplit"
                   value={newTournament.split || ""}
-                  onChange={(e) => setNewTournament({ ...newTournament, split: e.target.value })}
+                  onChange={(e) =>
+                    setNewTournament({
+                      ...newTournament,
+                      split: e.target.value,
+                    })
+                  }
                   className="col-span-3"
                   placeholder="Spring, Summer"
                 />
@@ -146,12 +241,19 @@ const TournamentsPage: React.FC = () => {
                   id="newPlayoffs"
                   type="checkbox"
                   checked={newTournament.playoffs || false}
-                  onChange={(e) => setNewTournament({ ...newTournament, playoffs: e.target.checked })}
+                  onChange={(e) =>
+                    setNewTournament({
+                      ...newTournament,
+                      playoffs: e.target.checked,
+                    })
+                  }
                 />
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Creating..." : "Create Tournament"}
+                  {createMutation.isPending
+                    ? "Creating..."
+                    : "Create Tournament"}
                 </Button>
               </DialogFooter>
             </form>
@@ -160,8 +262,14 @@ const TournamentsPage: React.FC = () => {
       </div>
 
       <div className="mb-4 flex gap-4">
-        <Select value={yearFilter} onValueChange={(value) => { setYearFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-35">
+        <Select
+          value={yearFilter}
+          onValueChange={(value) => {
+            setYearFilter(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
             <IconFilter className="mr-2" size={16} />
             <SelectValue placeholder="Year" />
           </SelectTrigger>
@@ -174,9 +282,15 @@ const TournamentsPage: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
-        
-        <Select value={leagueFilter} onValueChange={(value) => { setLeagueFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-35">
+
+        <Select
+          value={leagueFilter}
+          onValueChange={(value) => {
+            setLeagueFilter(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="League" />
           </SelectTrigger>
           <SelectContent>
@@ -189,8 +303,14 @@ const TournamentsPage: React.FC = () => {
           </SelectContent>
         </Select>
 
-        <Select value={playoffsFilter} onValueChange={(value) => { setPlayoffsFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-35">
+        <Select
+          value={playoffsFilter}
+          onValueChange={(value) => {
+            setPlayoffsFilter(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Playoffs" />
           </SelectTrigger>
           <SelectContent>
@@ -215,14 +335,16 @@ const TournamentsPage: React.FC = () => {
               <TableHead>Year</TableHead>
               <TableHead>Split</TableHead>
               <TableHead>Playoffs</TableHead>
-              <TableHead className="text-right w-25">Actions</TableHead>
+              <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tournaments && tournaments.length > 0 ? (
               tournaments.map((tournament) => (
                 <TableRow key={tournament.id}>
-                  <TableCell className="font-medium">{tournament.league}</TableCell>
+                  <TableCell className="font-medium">
+                    {tournament.league}
+                  </TableCell>
                   <TableCell>{tournament.year}</TableCell>
                   <TableCell>{tournament.split || "-"}</TableCell>
                   <TableCell>{tournament.playoffs ? "Yes" : "No"}</TableCell>
@@ -247,7 +369,7 @@ const TournamentsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(tournament.id)}
+                        onClick={() => handleDeleteClick(tournament)}
                       >
                         <IconTrash size={18} className="text-destructive" />
                       </Button>
@@ -257,7 +379,10 @@ const TournamentsPage: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="text-center text-muted-foreground"
+                >
                   No tournaments found
                 </TableCell>
               </TableRow>
@@ -275,9 +400,7 @@ const TournamentsPage: React.FC = () => {
         >
           Previous
         </Button>
-        <div className="text-sm text-muted-foreground">
-          Page {page + 1}
-        </div>
+        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
         <Button
           variant="outline"
           size="sm"
@@ -300,7 +423,9 @@ const TournamentsPage: React.FC = () => {
               </Label>
               <Select
                 value={editTournament.league}
-                onValueChange={(value) => setEditTournament({ ...editTournament, league: value })}
+                onValueChange={(value) =>
+                  setEditTournament({ ...editTournament, league: value })
+                }
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select league" />
@@ -322,7 +447,12 @@ const TournamentsPage: React.FC = () => {
                 id="editYear"
                 type="number"
                 value={editTournament.year ?? ""}
-                onChange={(e) => setEditTournament({ ...editTournament, year: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setEditTournament({
+                    ...editTournament,
+                    year: parseInt(e.target.value),
+                  })
+                }
                 className="col-span-3"
                 required
               />
@@ -334,7 +464,12 @@ const TournamentsPage: React.FC = () => {
               <Input
                 id="editSplit"
                 value={editTournament.split ?? ""}
-                onChange={(e) => setEditTournament({ ...editTournament, split: e.target.value })}
+                onChange={(e) =>
+                  setEditTournament({
+                    ...editTournament,
+                    split: e.target.value,
+                  })
+                }
                 className="col-span-3"
               />
             </div>
@@ -346,7 +481,12 @@ const TournamentsPage: React.FC = () => {
                 id="editPlayoffs"
                 type="checkbox"
                 checked={editTournament.playoffs ?? false}
-                onChange={(e) => setEditTournament({ ...editTournament, playoffs: e.target.checked })}
+                onChange={(e) =>
+                  setEditTournament({
+                    ...editTournament,
+                    playoffs: e.target.checked,
+                  })
+                }
               />
             </div>
             <DialogFooter>
@@ -357,6 +497,23 @@ const TournamentsPage: React.FC = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the tournament "{tournamentToDelete?.league} {tournamentToDelete?.year} {tournamentToDelete?.split}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

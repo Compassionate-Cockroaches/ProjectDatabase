@@ -7,6 +7,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -44,23 +54,6 @@ import React, { useState } from "react";
 const ITEMS_PER_PAGE = 10;
 const POSITIONS = ["Top", "Jungle", "Mid", "Bot", "Support"];
 
-const convertPositionCode = (position: string) => {
-  switch (position) {
-    case "Top":
-      return "top";
-    case "Jungle":
-      return "jng";
-    case "Mid":
-      return "mid";
-    case "Bot":
-      return "bot";
-    case "Support":
-      return "sup";
-    default:
-      return position;
-  }
-};
-
 const PlayersPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
@@ -75,7 +68,7 @@ const PlayersPage: React.FC = () => {
     skip: page * ITEMS_PER_PAGE,
     limit: ITEMS_PER_PAGE,
     search: debouncedSearch || undefined,
-    position: convertPositionCode(position) || undefined,
+    position: position || undefined,
   });
 
   const createMutation = useCreatePlayer();
@@ -84,7 +77,9 @@ const PlayersPage: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [newPlayer, setNewPlayer] = useState<PlayerCreate>({ player_name: "" });
   const [editPlayer, setEditPlayer] = useState<PlayerUpdate>({});
 
@@ -108,9 +103,16 @@ const PlayersPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this player?")) {
-      await deleteMutation.mutateAsync(id);
+  const handleDeleteClick = (player: Player) => {
+    setPlayerToDelete(player);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (playerToDelete) {
+      await deleteMutation.mutateAsync(playerToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setPlayerToDelete(null);
     }
   };
 
@@ -216,7 +218,7 @@ const PlayersPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-45">
+          <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Position" />
           </SelectTrigger>
           <SelectContent>
@@ -241,7 +243,7 @@ const PlayersPage: React.FC = () => {
             <TableRow>
               <TableHead>Player Name</TableHead>
               <TableHead>Position</TableHead>
-              <TableHead className="text-right w-25">Actions</TableHead>
+              <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -271,7 +273,7 @@ const PlayersPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(player.id)}
+                        onClick={() => handleDeleteClick(player)}
                       >
                         <IconTrash size={18} className="text-destructive" />
                       </Button>
@@ -363,6 +365,23 @@ const PlayersPage: React.FC = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the player "{playerToDelete?.player_name}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
