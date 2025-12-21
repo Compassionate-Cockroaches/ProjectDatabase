@@ -4,6 +4,9 @@ export interface Tournament {
   year: number;
   split?: string;
   playoffs?: boolean;
+  // Stats properties (returned from getById endpoint)
+  total_teams?: number;
+  total_matches?: number;
 }
 
 export interface TournamentCreate {

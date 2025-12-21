@@ -25,4 +25,19 @@ export const playerService = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/api/players/${id}`);
   },
+
+  getMatches: async (id: string, params?: { skip?: number; limit?: number }) => {
+    const response = await api.get(`/api/players/${id}/matches`, { params });
+    return response.data;
+  },
+
+  getChampionStats: async (id: string) => {
+    const response = await api.get(`/api/players/${id}/champions`);
+    return response.data;
+  },
+
+  getTeams: async (id: string) => {
+    const response = await api.get(`/api/players/${id}/teams`);
+    return response.data;
+  },
 };

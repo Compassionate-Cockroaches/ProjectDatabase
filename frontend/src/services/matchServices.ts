@@ -25,4 +25,14 @@ export const matchService = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/api/matches/${id}`);
   },
+
+  getDetails: async (id: string) => {
+    const response = await api.get(`/api/matches/${id}/details`);
+    return response.data;
+  },
+
+  getPlayerStats: async (id: string) => {
+    const response = await api.get(`/api/matches/${id}/player-stats`);
+    return response.data;
+  },
 };

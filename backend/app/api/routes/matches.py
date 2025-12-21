@@ -10,6 +10,7 @@ from app.models.match import Match
 from app.models.match_player_stats import MatchPlayerStats
 from app.models.player import Player
 from app.models.team import Team
+from app.models.tournament import Tournament
 from app.models.user import User
 from app.schemas.match import MatchCreate, MatchResponse, MatchUpdate
 from app.schemas.match_player_stats import (
@@ -45,23 +46,35 @@ async def list_matches(
 
     matches = session.exec(statement).all()
     
-    # Enrich matches with team information
-    enriched_matches = []
-    for match in matches:
-        # Get unique teams for this match from match_player_stats
+    # Efficiently get teams for all matches in one query
+    match_ids = [m.id for m in matches]
+    if match_ids:
         team_statement = (
-            select(Team.team_name)
-            .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
-            .where(MatchPlayerStats.match_id == match.id)
+            select(MatchPlayerStats.match_id, Team.team_name)
+            .join(Team, MatchPlayerStats.team_id == Team.id)
+            .where(MatchPlayerStats.match_id.in_(match_ids))
             .distinct()
         )
-        team_names = session.exec(team_statement).all()
+        team_results = session.exec(team_statement).all()
         
-        match_dict = match.model_dump()
-        match_dict["team_names"] = list(team_names)
-        enriched_matches.append(MatchResponse(**match_dict))
+        # Group teams by match_id
+        match_teams = {}
+        for match_id, team_name in team_results:
+            if match_id not in match_teams:
+                match_teams[match_id] = []
+            if len(match_teams[match_id]) < 2:  # Only keep 2 teams
+                match_teams[match_id].append(team_name)
+        
+        # Enrich matches with team names
+        enriched_matches = []
+        for match in matches:
+            match_dict = match.model_dump()
+            match_dict["team_names"] = match_teams.get(match.id, [])
+            enriched_matches.append(MatchResponse(**match_dict))
+        
+        return enriched_matches
     
-    return enriched_matches
+    return matches
 
 
 @router.get("/{match_id}", response_model=MatchResponse)
@@ -70,7 +83,64 @@ async def get_match(match_id: str, session: Annotated[Session, Depends(get_sessi
     match = session.get(Match, match_id)
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
-    return match
+
+    # Get teams for this match
+    team_statement = (
+        select(Team.team_name)
+        .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+        .where(MatchPlayerStats.match_id == match.id)
+        .distinct()
+    )
+    team_names = session.exec(team_statement).all()
+
+    match_dict = match.model_dump()
+    match_dict["team_names"] = list(team_names)
+
+    return MatchResponse(**match_dict)
+
+
+@router.get("/{match_id}/details")
+async def get_match_details(
+    match_id: str, session: Annotated[Session, Depends(get_session)]
+):
+    """Get comprehensive match details including tournament info"""
+    match = session.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    # Get tournament info
+    tournament = session.get(Tournament, match.tournament_id)
+
+    # Get team stats
+    team_stats_statement = (
+        select(
+            Team.id,
+            Team.team_name,
+            MatchPlayerStats.side,
+            MatchPlayerStats.result,
+        )
+        .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+        .where(MatchPlayerStats.match_id == match_id)
+        .distinct()
+    )
+
+    team_results = session.exec(team_stats_statement).all()
+
+    teams = {}
+    for team_id, team_name, side, result in team_results:
+        if team_id not in teams:
+            teams[team_id] = {
+                "team_id": team_id,
+                "team_name": team_name,
+                "side": side,
+                "result": result,
+            }
+
+    return {
+        "match": match.model_dump(),
+        "tournament": tournament.model_dump() if tournament else None,
+        "teams": list(teams.values()),
+    }
 
 
 @router.post("/", response_model=MatchResponse, status_code=status.HTTP_201_CREATED)

@@ -6,6 +6,9 @@ from sqlmodel import Session, func, select
 from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
 from app.models.match import Match
+from app.models.match_player_stats import MatchPlayerStats
+from app.models.player import Player
+from app.models.team import Team
 from app.models.team_tournament import TeamTournament
 from app.models.tournament import Tournament
 from app.models.user import User
@@ -132,3 +135,180 @@ async def delete_tournament(
     session.delete(tournament)
     session.commit()
     return None
+
+
+@router.get("/{tournament_id}/teams")
+async def get_tournament_teams(
+    tournament_id: str,
+    session: Annotated[Session, Depends(get_session)],
+):
+    """Get all teams participating in tournament with standings"""
+    from sqlmodel import Integer, cast
+    
+    statement = (
+        select(
+            Team.id,
+            Team.team_name,
+            TeamTournament.result,
+            func.count(MatchPlayerStats.match_id.distinct()).label("games_played"),
+            func.sum(cast(MatchPlayerStats.result, Integer)).label("wins"),
+        )
+        .join(TeamTournament, TeamTournament.team_id == Team.id)
+        .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .where(TeamTournament.tournament_id == tournament_id)
+        .where(Match.tournament_id == tournament_id)
+        .group_by(Team.id, Team.team_name, TeamTournament.result)
+        .order_by(func.sum(cast(MatchPlayerStats.result, Integer)).desc())
+    )
+    
+    results = session.exec(statement).all()
+    
+    teams = []
+    for result in results:
+        games = result.games_played or 0
+        wins = result.wins or 0
+        losses = games - wins
+        win_rate = (wins / games * 100) if games > 0 else 0
+        
+        teams.append({
+            "team_id": result.id,
+            "team_name": result.team_name,
+            "result": result.result,
+            "games_played": games,
+            "wins": wins,
+            "losses": losses,
+            "win_rate": round(win_rate, 2),
+        })
+    
+    return teams
+
+
+@router.get("/{tournament_id}/matches")
+async def get_tournament_matches(
+    tournament_id: str,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    session: Annotated[Session, Depends(get_session)] = None,
+):
+    """Get all matches in tournament"""
+    statement = (
+        select(Match)
+        .where(Match.tournament_id == tournament_id)
+        .order_by(Match.match_date.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    
+    matches = session.exec(statement).all()
+    
+    enriched_matches = []
+    for match in matches:
+        # Get teams for this match
+        team_statement = (
+            select(Team.team_name, MatchPlayerStats.result)
+            .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+            .where(MatchPlayerStats.match_id == match.id)
+            .distinct()
+        )
+        team_results = session.exec(team_statement).all()
+        
+        match_dict = match.model_dump()
+        match_dict["teams"] = [
+            {"team_name": name, "result": result}
+            for name, result in team_results
+        ]
+        enriched_matches.append(match_dict)
+    
+    return enriched_matches
+
+
+@router.get("/{tournament_id}/stats")
+async def get_tournament_stats(
+    tournament_id: str,
+    session: Annotated[Session, Depends(get_session)],
+):
+    """Get tournament statistics and leaderboards"""
+    from sqlmodel import Integer, cast
+    
+    # Top players by KDA
+    top_kda_statement = (
+        select(
+            Player.id,
+            Player.player_name,
+            Team.team_name,
+            func.count(MatchPlayerStats.match_id).label("games"),
+            func.avg(MatchPlayerStats.kills).label("avg_kills"),
+            func.avg(MatchPlayerStats.deaths).label("avg_deaths"),
+            func.avg(MatchPlayerStats.assists).label("avg_assists"),
+        )
+        .join(MatchPlayerStats, MatchPlayerStats.player_id == Player.id)
+        .join(Team, MatchPlayerStats.team_id == Team.id)
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .where(Match.tournament_id == tournament_id)
+        .group_by(Player.id, Player.player_name, Team.team_name)
+        .having(func.count(MatchPlayerStats.match_id) >= 3)
+    )
+    
+    kda_results = session.exec(top_kda_statement).all()
+    
+    top_players = []
+    for result in kda_results:
+        deaths = result.avg_deaths or 0
+        kda = ((result.avg_kills + result.avg_assists) / deaths) if deaths > 0 else (result.avg_kills + result.avg_assists)
+        
+        top_players.append({
+            "player_id": result.id,
+            "player_name": result.player_name,
+            "team_name": result.team_name,
+            "games_played": result.games,
+            "avg_kda": round(kda, 2),
+            "avg_kills": round(result.avg_kills, 2),
+            "avg_deaths": round(result.avg_deaths, 2),
+            "avg_assists": round(result.avg_assists, 2),
+        })
+    
+    # Sort by KDA
+    top_players.sort(key=lambda x: x["avg_kda"], reverse=True)
+    
+    # Most picked champions
+    champion_statement = (
+        select(
+            MatchPlayerStats.champion,
+            func.count(MatchPlayerStats.match_id).label("picks"),
+            func.sum(cast(MatchPlayerStats.result, Integer)).label("wins"),
+        )
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .where(Match.tournament_id == tournament_id)
+        .where(MatchPlayerStats.champion.is_not(None))
+        .group_by(MatchPlayerStats.champion)
+        .order_by(func.count(MatchPlayerStats.match_id).desc())
+        .limit(10)
+    )
+    
+    champion_results = session.exec(champion_statement).all()
+    
+    champion_stats = []
+    for result in champion_results:
+        picks = result.picks or 0
+        wins = result.wins or 0
+        win_rate = (wins / picks * 100) if picks > 0 else 0
+        
+        champion_stats.append({
+            "champion": result.champion,
+            "picks": picks,
+            "wins": wins,
+            "win_rate": round(win_rate, 2),
+        })
+    
+    # Average game duration
+    avg_duration_stmt = select(func.avg(Match.game_length)).where(
+        Match.tournament_id == tournament_id
+    )
+    avg_duration = session.exec(avg_duration_stmt).first() or 0
+    
+    return {
+        "top_players": top_players[:10],
+        "champion_stats": champion_stats,
+        "avg_game_duration": round(avg_duration, 2) if avg_duration else 0,
+    }

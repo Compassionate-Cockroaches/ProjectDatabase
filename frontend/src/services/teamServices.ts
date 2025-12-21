@@ -25,4 +25,24 @@ export const teamService = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/api/teams/${id}`);
   },
+
+  getTournaments: async (id: string) => {
+    const response = await api.get(`/api/teams/${id}/tournaments`);
+    return response.data;
+  },
+
+  getMatches: async (id: string, params?: { skip?: number; limit?: number }) => {
+    const response = await api.get(`/api/teams/${id}/matches`, { params });
+    return response.data;
+  },
+
+  getPlayers: async (id: string) => {
+    const response = await api.get(`/api/teams/${id}/players`);
+    return response.data;
+  },
+
+  getStats: async (id: string) => {
+    const response = await api.get(`/api/teams/${id}/stats`);
+    return response.data;
+  },
 };

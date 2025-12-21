@@ -6,8 +6,10 @@ from sqlmodel import Integer, Session, cast, func, select
 from app.api.deps import get_current_active_user, require_admin
 from app.core.database import get_session
 from app.models.match_player_stats import MatchPlayerStats
+from app.models.match import Match
 from app.models.player import Player
 from app.models.team import Team
+from app.models.tournament import Tournament
 from app.models.user import User
 from app.schemas.player import (
     PlayerCreate,
@@ -39,24 +41,7 @@ async def list_players(
         statement = statement.where(Player.player_name.contains(search))
 
     players = session.exec(statement).all()
-    
-    # Enrich players with team information
-    enriched_players = []
-    for player in players:
-        # Get unique teams for this player from match_player_stats
-        team_statement = (
-            select(Team.team_name)
-            .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
-            .where(MatchPlayerStats.player_id == player.id)
-            .distinct()
-        )
-        team_names = session.exec(team_statement).all()
-        
-        player_dict = player.model_dump()
-        player_dict["team_names"] = list(team_names)
-        enriched_players.append(PlayerResponse(**player_dict))
-    
-    return enriched_players
+    return players
 
 
 @router.get("/{player_id}", response_model=PlayerWithStats)
@@ -162,3 +147,117 @@ async def delete_player(
     session.delete(player)
     session.commit()
     return None
+
+
+@router.get("/{player_id}/matches")
+async def get_player_matches(
+    player_id: str,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    session: Annotated[Session, Depends(get_session)] = None,
+):
+    """Get player's match history with stats"""
+    # Get player matches with related data
+    statement = (
+        select(MatchPlayerStats, Match.match_date, Team.team_name)
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .join(Team, MatchPlayerStats.team_id == Team.id)
+        .where(MatchPlayerStats.player_id == player_id)
+        .order_by(Match.match_date.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    
+    results = session.exec(statement).all()
+    
+    matches = []
+    for stats, match_date, team_name in results:
+        match_dict = stats.model_dump()
+        match_dict["match_date"] = match_date
+        match_dict["team_name"] = team_name
+        matches.append(match_dict)
+    
+    return matches
+
+
+@router.get("/{player_id}/champions")
+async def get_player_champion_stats(
+    player_id: str,
+    session: Annotated[Session, Depends(get_session)] = None,
+):
+    """Get player's champion statistics"""
+    statement = (
+        select(
+            MatchPlayerStats.champion,
+            func.count(MatchPlayerStats.match_id).label("games_played"),
+            func.sum(cast(MatchPlayerStats.result, Integer)).label("wins"),
+            func.avg(MatchPlayerStats.kills).label("avg_kills"),
+            func.avg(MatchPlayerStats.deaths).label("avg_deaths"),
+            func.avg(MatchPlayerStats.assists).label("avg_assists"),
+        )
+        .where(MatchPlayerStats.player_id == player_id)
+        .group_by(MatchPlayerStats.champion)
+        .order_by(func.count(MatchPlayerStats.match_id).desc())
+    )
+    
+    results = session.exec(statement).all()
+    
+    champion_stats = []
+    for result in results:
+        games = result.games_played or 0
+        wins = result.wins or 0
+        deaths = result.avg_deaths or 0
+        
+        win_rate = (wins / games * 100) if games > 0 else 0
+        kda = ((result.avg_kills + result.avg_assists) / deaths) if deaths > 0 else (result.avg_kills + result.avg_assists)
+        
+        champion_stats.append({
+            "champion": result.champion,
+            "games_played": games,
+            "wins": wins,
+            "win_rate": round(win_rate, 2),
+            "avg_kills": round(result.avg_kills, 2),
+            "avg_deaths": round(result.avg_deaths, 2),
+            "avg_assists": round(result.avg_assists, 2),
+            "avg_kda": round(kda, 2),
+        })
+    
+    return champion_stats
+
+
+@router.get("/{player_id}/teams")
+async def get_player_teams(
+    player_id: str,
+    session: Annotated[Session, Depends(get_session)],
+):
+    """Get all teams the player has played for"""
+    statement = (
+        select(
+            Team.id,
+            Team.team_name,
+            func.count(MatchPlayerStats.match_id.distinct()).label("games_played"),
+            func.sum(cast(MatchPlayerStats.result, Integer)).label("wins"),
+        )
+        .join(MatchPlayerStats, MatchPlayerStats.team_id == Team.id)
+        .where(MatchPlayerStats.player_id == player_id)
+        .group_by(Team.id, Team.team_name)
+        .order_by(func.count(MatchPlayerStats.match_id.distinct()).desc())
+    )
+    
+    results = session.exec(statement).all()
+    
+    teams = []
+    for result in results:
+        games = result.games_played or 0
+        wins = result.wins or 0
+        win_rate = (wins / games * 100) if games > 0 else 0
+        
+        teams.append({
+            "team_id": result.id,
+            "team_name": result.team_name,
+            "games_played": games,
+            "wins": wins,
+            "win_rate": round(win_rate, 2),
+        })
+    
+    return teams
