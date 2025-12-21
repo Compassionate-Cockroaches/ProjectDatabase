@@ -1,31 +1,35 @@
-from typing import Annotated, List
+from typing import Annotated, List, Optional, Literal
+
 from fastapi import APIRouter, Depends, Query
-from sqlmodel import Session, select, func, cast, Integer
+from pydantic import BaseModel
+from sqlmodel import Session, select, func, cast, Integer, case
+
 from app.core.database import get_session
 from app.models.player import Player
 from app.models.team import Team
 from app.models.tournament import Tournament
 from app.models.match import Match
 from app.models.match_player_stats import MatchPlayerStats
-from app.models.team_tournament import TeamTournament
-from app.api.deps import get_current_active_user, require_analyst
+from app.api.deps import require_analyst
 from app.models.user import User
-from pydantic import BaseModel
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
-# Response models for analytics
-class PlayerKDAStats(BaseModel):
+
+class PlayerLeaderboardRow(BaseModel):
     player_id: str
     player_name: str
     position: str
     games_played: int
-    total_kills: int
-    total_deaths: int
-    total_assists: int
-    kda_ratio: float
+    metric: str
+    metric_value: float
 
-class TeamWinRateStats(BaseModel):
+    total_kills: Optional[int] = None
+    total_deaths: Optional[int] = None
+    total_assists: Optional[int] = None
+
+
+class TeamLeaderboardRow(BaseModel):
     team_id: str
     team_name: str
     matches_played: int
@@ -47,184 +51,237 @@ class DashboardStats(BaseModel):
     total_tournaments: int
     total_matches: int
 
-@router.get("/players/top-kda", response_model=List[PlayerKDAStats])
-async def get_top_players_by_kda(
+@router.get("/leaderboard/players", response_model=List[PlayerLeaderboardRow])
+async def players_leaderboard(
+    # Metric must be rankable
+    metric: Literal["kda", "dpm", "cspm", "vision", "winrate"] = Query(
+        "kda", description="Ranking metric"
+    ),
+    # Shared-category filters (dataset scope)
+    year: Optional[int] = Query(None, description="Tournament year, e.g. 2024"),
+    league: Optional[str] = Query(None, description="Tournament league code, e.g. AL, CBLOL"),
+    split: Optional[str] = Query(None, description="Split, e.g. Spring, Summer, Split 1"),
+    playoffs: Optional[int] = Query(None, description="0 or 1"),
+    patch: Optional[str] = Query(None, description="Patch, e.g. 14.3"),
+    # Player-only filters
+    position: Optional[str] = Query(None, description="Player position"),
+    champion: Optional[str] = Query(None, description="Champion name, e.g. Annie"),
+    side: Optional[str] = Query(None, description="Blue or Red"),
+    # Controls
     limit: int = Query(10, ge=1, le=100),
-    position: str = Query(None, description="Filter by position"),
-    tournament_id: str = Query(None, description="Filter by tournament"),
+    min_games: int = Query(5, ge=1, le=100),
     session: Annotated[Session, Depends(get_session)] = None,
-    current_user: Annotated[User, Depends(require_analyst)] = None
+    current_user: Annotated[User, Depends(require_analyst)] = None,
 ):
     """
-    Get top players by KDA ratio (Analyst/Admin only)
-    Uses GROUP BY aggregation for analytics
+    Player leaderboard
+    - Shared-category filters define dataset (year/league/split/playoffs/patch)
+    - Player-only filters further slice (position/champion/side)
+    - Metric defines ranking (kda/dpm/cspm/vision/winrate)
     """
-    # Base query with GROUP BY
-    query = select(
-        Player.id,
-        Player.player_name,
-        Player.position,
-        func.count(MatchPlayerStats.match_id).label("games_played"),
-        func.sum(MatchPlayerStats.kills).label("total_kills"),
-        func.sum(MatchPlayerStats.deaths).label("total_deaths"),
-        func.sum(MatchPlayerStats.assists).label("total_assists")
-    ).join(
-        MatchPlayerStats, Player.id == MatchPlayerStats.player_id
-    ).group_by(
-        Player.id, Player.player_name, Player.position
+
+    base = (
+        select(
+            Player.id.label("player_id"),
+            Player.player_name.label("player_name"),
+            Player.position.label("position"),
+            func.count(func.distinct(MatchPlayerStats.match_id)).label("games_played"),
+        )
+        .join(MatchPlayerStats, Player.id == MatchPlayerStats.player_id)
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .join(Tournament, Match.tournament_id == Tournament.id)
+        .group_by(Player.id, Player.player_name, Player.position)
     )
-    
-    # Add position filter
+
+    # Player-only filters
     if position:
-        query = query.where(Player.position == position)
-    
-    # Add tournament filter
-    if tournament_id:
-        query = query.join(
-            Match, MatchPlayerStats.match_id == Match.id
-        ).where(
-            Match.tournament_id == tournament_id
-        )
-    
-    # Having clause - only players with at least 5 games
-    query = query.having(func.count(MatchPlayerStats.match_id) >= 5)
-    
-    results = session.exec(query).all()
-    
-    # Calculate KDA and sort
-    player_stats = []
-    for row in results:
-        deaths = row.total_deaths or 1  # Avoid division by zero
-        kda = (row.total_kills + row.total_assists) / deaths
-        
-        player_stats.append(PlayerKDAStats(
-            player_id=row.id,
-            player_name=row.player_name,
-            position=row.position or "Unknown",
-            games_played=row.games_played,
-            total_kills=row.total_kills or 0,
-            total_deaths=row.total_deaths or 0,
-            total_assists=row.total_assists or 0,
-            kda_ratio=round(kda, 2)
-        ))
-    
-    # Sort by KDA and return top N
-    player_stats.sort(key=lambda x: x.kda_ratio, reverse=True)
-    return player_stats[:limit]
+        base = base.where(Player.position == position)
+    if champion:
+        base = base.where(MatchPlayerStats.champion == champion)
+    if side:
+        base = base.where(MatchPlayerStats.side == side)
 
-@router.get("/teams/win-rate", response_model=List[TeamWinRateStats])
-async def get_teams_win_rate(
-    tournament_id: str = Query(None, description="Filter by tournament"),
+    # Shared-category filters
+    if year is not None:
+        base = base.where(Tournament.year == year)
+    if league:
+        base = base.where(Tournament.league == league)
+    if split:
+        base = base.where(Tournament.split == split)
+    if playoffs is not None:
+        base = base.where(Tournament.playoffs == playoffs)
+    if patch:
+        base = base.where(Match.patch == patch)
+
+    # Add metric columns
+    if metric == "kda":
+        query = base.add_columns(
+            func.sum(MatchPlayerStats.kills).label("kills"),
+            func.sum(MatchPlayerStats.deaths).label("deaths"),
+            func.sum(MatchPlayerStats.assists).label("assists"),
+        )
+    elif metric == "dpm":
+        query = base.add_columns(func.avg(MatchPlayerStats.dpm).label("avg_metric"))
+    elif metric == "cspm":
+        query = base.add_columns(func.avg(MatchPlayerStats.cspm).label("avg_metric"))
+    elif metric == "vision":
+        query = base.add_columns(func.avg(MatchPlayerStats.visionscore).label("avg_metric"))
+    elif metric == "winrate":
+        # result is 0/1 per player row; avg(result) gives win rate
+        query = base.add_columns(func.avg(cast(MatchPlayerStats.result, Integer)).label("avg_metric"))
+    else:
+        query = base  # Literal prevents this
+
+    query = query.having(func.count(func.distinct(MatchPlayerStats.match_id)) >= min_games)
+
+    rows = session.exec(query).all()
+    results: List[PlayerLeaderboardRow] = []
+
+    for row in rows:
+        if metric == "kda":
+            kills = row.kills or 0
+            deaths = row.deaths or 0
+            assists = row.assists or 0
+            denom = deaths if deaths > 0 else 1
+            kda = (kills + assists) / denom
+
+            results.append(
+                PlayerLeaderboardRow(
+                    player_id=row.player_id,
+                    player_name=row.player_name,
+                    position=row.position or "Unknown",
+                    games_played=row.games_played or 0,
+                    metric="kda",
+                    metric_value=round(float(kda), 2),
+                    total_kills=kills,
+                    total_deaths=deaths,
+                    total_assists=assists,
+                )
+            )
+        else:
+            # winrate should be shown as %
+            val = float(row.avg_metric or 0)
+            if metric == "winrate":
+                val *= 100.0
+
+            results.append(
+                PlayerLeaderboardRow(
+                    player_id=row.player_id,
+                    player_name=row.player_name,
+                    position=row.position or "Unknown",
+                    games_played=row.games_played or 0,
+                    metric=metric,
+                    metric_value=round(val, 2),
+                )
+            )
+
+    results.sort(key=lambda x: x.metric_value, reverse=True)
+    return results[:limit]
+
+@router.get("/leaderboard/teams", response_model=List[TeamLeaderboardRow])
+async def teams_leaderboard(
+    # Shared-category filters
+    year: Optional[int] = Query(None),
+    league: Optional[str] = Query(None),
+    split: Optional[str] = Query(None),
+    playoffs: Optional[int] = Query(None),
+    patch: Optional[str] = Query(None, description="Patch, e.g. 14.3"),
+    # Controls
+    limit: int = Query(10, ge=1, le=100),
+    min_matches: int = Query(5, ge=1, le=100),
     session: Annotated[Session, Depends(get_session)] = None,
-    current_user: Annotated[User, Depends(require_analyst)] = None
+    current_user: Annotated[User, Depends(require_analyst)] = None,
 ):
     """
-    Get team win rates (Analyst/Admin only)
-    Uses GROUP BY with aggregation
+    Team leaderboard ranked by win rate.
+    Fixes:
+    - matches_played is COUNT(DISTINCT match)
+    - wins computed per team per match (not using //5)
     """
-    # Query with GROUP BY
-    query = select(
-        Team.id,
-        Team.team_name,
-        func.count(MatchPlayerStats.match_id).label("matches_played"),
-        func.sum(cast(MatchPlayerStats.result, Integer)).label("wins")
-    ).join(
-        MatchPlayerStats, Team.id == MatchPlayerStats.team_id
-    ).group_by(
-        Team.id, Team.team_name
-    )
-    
-    # Add tournament filter
-    if tournament_id:
-        query = query.join(
-            Match, MatchPlayerStats.match_id == Match.id
-        ).where(
-            Match.tournament_id == tournament_id
+
+    # Step 1: compute team win per match (1 row per team per match)
+    team_per_match = (
+        select(
+            Team.id.label("team_id"),
+            Team.team_name.label("team_name"),
+            Match.id.label("match_id"),
+            # If team won the match, player result=1 for its players
+            # Summing result across that team in a match should be 5 for winners, 0 for losers (normal data)
+            case(
+                (func.sum(cast(MatchPlayerStats.result, Integer)) >= 3, 1),
+                else_=0,
+            ).label("team_win"),
         )
-    
-    results = session.exec(query).all()
-    
-    # Calculate win rates
-    team_stats = []
-    for row in results:
-        matches = row.matches_played // 10  # Each match has ~10 player records
-        wins = (row.wins or 0) // 5  # Each win has 5 winning players
+        .join(MatchPlayerStats, Team.id == MatchPlayerStats.team_id)
+        .join(Match, MatchPlayerStats.match_id == Match.id)
+        .join(Tournament, Match.tournament_id == Tournament.id)
+        .group_by(Team.id, Team.team_name, Match.id)
+    )
+
+    # Shared-category filters
+    if year is not None:
+        team_per_match = team_per_match.where(Tournament.year == year)
+    if league:
+        team_per_match = team_per_match.where(Tournament.league == league)
+    if split:
+        team_per_match = team_per_match.where(Tournament.split == split)
+    if playoffs is not None:
+        team_per_match = team_per_match.where(Tournament.playoffs == playoffs)
+    if patch:
+        team_per_match = team_per_match.where(Match.patch == patch)
+
+    subq = team_per_match.subquery()
+
+    # Step 2: aggregate per team
+    base = (
+        select(
+            subq.c.team_id,
+            subq.c.team_name,
+            func.count(func.distinct(subq.c.match_id)).label("matches_played"),
+            func.sum(cast(subq.c.team_win, Integer)).label("wins"),
+        )
+        .group_by(subq.c.team_id, subq.c.team_name)
+        .having(func.count(func.distinct(subq.c.match_id)) >= min_matches)
+    )
+
+    rows = session.exec(base).all()
+    results: List[TeamLeaderboardRow] = []
+
+    for row in rows:
+        matches = int(row.matches_played or 0)
+        wins = int(row.wins or 0)
         losses = matches - wins
-        win_rate = (wins / matches * 100) if matches > 0 else 0
-        
-        team_stats.append(TeamWinRateStats(
-            team_id=row.id,
-            team_name=row.team_name,
-            matches_played=matches,
-            wins=wins,
-            losses=losses,
-            win_rate=round(win_rate, 2)
-        ))
-    
-    # Sort by win rate
-    team_stats.sort(key=lambda x: x.win_rate, reverse=True)
-    return team_stats
+        win_rate = (wins / matches * 100) if matches > 0 else 0.0
 
-@router.get("/tournaments/participation-stats", response_model=List[TournamentParticipationStats])
-async def get_tournament_participation_stats(
-    session: Annotated[Session, Depends(get_session)] = None,
-    current_user: Annotated[User, Depends(require_analyst)] = None
-):
-    """
-    Get tournament participation statistics (Analyst/Admin only)
-    Uses multiple JOINs with GROUP BY
-    """
-    # Query with JOINs and GROUP BY
-    query = select(
-        Tournament.id,
-        Tournament.league,
-        Tournament.year,
-        Tournament.split,
-        func.count(func.distinct(TeamTournament.team_id)).label("total_teams"),
-        func.count(func.distinct(Match.id)).label("total_matches")
-    ).outerjoin(
-        TeamTournament, Tournament.id == TeamTournament.tournament_id
-    ).outerjoin(
-        Match, Tournament.id == Match.tournament_id
-    ).group_by(
-        Tournament.id, Tournament.league, Tournament.year, Tournament.split
-    ).order_by(
-        Tournament.year.desc(), Tournament.split
-    )
-    
-    results = session.exec(query).all()
-    
-    stats = [
-        TournamentParticipationStats(
-            tournament_id=row.id,
-            league=row.league,
-            year=row.year,
-            split=row.split or "N/A",
-            total_teams=row.total_teams or 0,
-            total_matches=row.total_matches or 0
+        results.append(
+            TeamLeaderboardRow(
+                team_id=row.team_id,
+                team_name=row.team_name,
+                matches_played=matches,
+                wins=wins,
+                losses=losses,
+                win_rate=round(win_rate, 2),
+            )
         )
-        for row in results
-    ]
-    
-    return stats
+
+    results.sort(key=lambda x: x.win_rate, reverse=True)
+    return results[:limit]
+
 
 @router.get("/dashboard", response_model=DashboardStats)
-async def get_dashboard_stats(
-    session: Annotated[Session, Depends(get_session)] = None
-):
+async def get_dashboard_stats(session: Annotated[Session, Depends(get_session)] = None):
     """
     Get summary dashboard statistics (Public access)
     This endpoint can use a view in production
     """
-    # Count totals
     total_teams = session.exec(select(func.count(Team.id))).first() or 0
     total_players = session.exec(select(func.count(Player.id))).first() or 0
     total_tournaments = session.exec(select(func.count(Tournament.id))).first() or 0
     total_matches = session.exec(select(func.count(Match.id))).first() or 0
-    
+
     return DashboardStats(
         total_teams=total_teams,
         total_players=total_players,
         total_tournaments=total_tournaments,
-        total_matches=total_matches
+        total_matches=total_matches,
     )
