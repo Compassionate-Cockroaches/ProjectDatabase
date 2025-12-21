@@ -119,7 +119,7 @@ const TeamsPage: React.FC = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Team Name</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

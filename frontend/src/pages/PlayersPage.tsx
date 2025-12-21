@@ -1,31 +1,83 @@
-import React, { useState } from "react";
-import { usePlayers, useCreatePlayer, useUpdatePlayer, useDeletePlayer } from "@/hooks/usePlayers";
-import { useDebounce } from "@/hooks/useDebounce";
-import type { Player, PlayerCreate, PlayerUpdate } from "@/types/player";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconEdit, IconTrash, IconPlus, IconSearch, IconX } from "@tabler/icons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useDebounce } from "@/hooks/useDebounce";
+import {
+  useCreatePlayer,
+  useDeletePlayer,
+  usePlayers,
+  useUpdatePlayer,
+} from "@/hooks/usePlayers";
+import type { Player, PlayerCreate, PlayerUpdate } from "@/types/player";
+import {
+  IconEdit,
+  IconPlus,
+  IconSearch,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
+import React, { useState } from "react";
 
 const ITEMS_PER_PAGE = 10;
 const POSITIONS = ["Top", "Jungle", "Mid", "Bot", "Support"];
+
+const convertPositionCode = (position: string) => {
+  switch (position) {
+    case "Top":
+      return "top";
+    case "Jungle":
+      return "jng";
+    case "Mid":
+      return "mid";
+    case "Bot":
+      return "bot";
+    case "Support":
+      return "sup";
+    default:
+      return position;
+  }
+};
 
 const PlayersPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const [position, setPosition] = useState<string>("");
   const debouncedSearch = useDebounce(search, 500);
-  
-  const { data: players, isLoading, isError } = usePlayers({ 
-    skip: page * ITEMS_PER_PAGE, 
+
+  const {
+    data: players,
+    isLoading,
+    isError,
+  } = usePlayers({
+    skip: page * ITEMS_PER_PAGE,
     limit: ITEMS_PER_PAGE,
     search: debouncedSearch || undefined,
-    position: position || undefined
+    position: convertPositionCode(position) || undefined,
   });
-  
+
   const createMutation = useCreatePlayer();
   const updateMutation = useUpdatePlayer();
   const deleteMutation = useDeletePlayer();
@@ -46,7 +98,10 @@ const PlayersPage: React.FC = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentPlayer) {
-      await updateMutation.mutateAsync({ id: currentPlayer.id, data: editPlayer });
+      await updateMutation.mutateAsync({
+        id: currentPlayer.id,
+        data: editPlayer,
+      });
       setIsEditModalOpen(false);
       setCurrentPlayer(null);
       setEditPlayer({});
@@ -69,8 +124,12 @@ const PlayersPage: React.FC = () => {
   const hasNextPage = players && players.length === ITEMS_PER_PAGE;
   const hasPrevPage = page > 0;
 
-  if (isLoading) return <div className="container mx-auto py-10">Loading players...</div>;
-  if (isError) return <div className="container mx-auto py-10">Error loading players.</div>;
+  if (isLoading)
+    return <div className="container mx-auto py-10">Loading players...</div>;
+  if (isError)
+    return (
+      <div className="container mx-auto py-10">Error loading players.</div>
+    );
 
   return (
     <div className="container mx-auto py-10">
@@ -95,7 +154,9 @@ const PlayersPage: React.FC = () => {
                 <Input
                   id="newPlayerName"
                   value={newPlayer.player_name}
-                  onChange={(e) => setNewPlayer({ ...newPlayer, player_name: e.target.value })}
+                  onChange={(e) =>
+                    setNewPlayer({ ...newPlayer, player_name: e.target.value })
+                  }
                   className="col-span-3"
                   required
                 />
@@ -106,7 +167,9 @@ const PlayersPage: React.FC = () => {
                 </Label>
                 <Select
                   value={newPlayer.position || ""}
-                  onValueChange={(value) => setNewPlayer({ ...newPlayer, position: value })}
+                  onValueChange={(value) =>
+                    setNewPlayer({ ...newPlayer, position: value })
+                  }
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select position" />
@@ -132,7 +195,10 @@ const PlayersPage: React.FC = () => {
 
       <div className="mb-4 flex gap-4">
         <div className="relative max-w-sm flex-1">
-          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <IconSearch
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={18}
+          />
           <Input
             placeholder="Search players..."
             value={search}
@@ -143,8 +209,14 @@ const PlayersPage: React.FC = () => {
             className="pl-10"
           />
         </div>
-        <Select value={position} onValueChange={(value) => { setPosition(value); setPage(0); }}>
-          <SelectTrigger className="w-[180px]">
+        <Select
+          value={position}
+          onValueChange={(value) => {
+            setPosition(value);
+            setPage(0);
+          }}
+        >
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Position" />
           </SelectTrigger>
           <SelectContent>
@@ -169,14 +241,16 @@ const PlayersPage: React.FC = () => {
             <TableRow>
               <TableHead>Player Name</TableHead>
               <TableHead>Position</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {players && players.length > 0 ? (
               players.map((player) => (
                 <TableRow key={player.id}>
-                  <TableCell className="font-medium">{player.player_name}</TableCell>
+                  <TableCell className="font-medium">
+                    {player.player_name}
+                  </TableCell>
                   <TableCell>{player.position || "-"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -207,7 +281,10 @@ const PlayersPage: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={3}
+                  className="text-center text-muted-foreground"
+                >
                   No players found
                 </TableCell>
               </TableRow>
@@ -225,9 +302,7 @@ const PlayersPage: React.FC = () => {
         >
           Previous
         </Button>
-        <div className="text-sm text-muted-foreground">
-          Page {page + 1}
-        </div>
+        <div className="text-sm text-muted-foreground">Page {page + 1}</div>
         <Button
           variant="outline"
           size="sm"
@@ -251,7 +326,9 @@ const PlayersPage: React.FC = () => {
               <Input
                 id="editPlayerName"
                 value={editPlayer.player_name ?? ""}
-                onChange={(e) => setEditPlayer({ ...editPlayer, player_name: e.target.value })}
+                onChange={(e) =>
+                  setEditPlayer({ ...editPlayer, player_name: e.target.value })
+                }
                 className="col-span-3"
                 required
               />
@@ -262,7 +339,9 @@ const PlayersPage: React.FC = () => {
               </Label>
               <Select
                 value={editPlayer.position || ""}
-                onValueChange={(value) => setEditPlayer({ ...editPlayer, position: value })}
+                onValueChange={(value) =>
+                  setEditPlayer({ ...editPlayer, position: value })
+                }
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select position" />

@@ -161,7 +161,7 @@ const TournamentsPage: React.FC = () => {
 
       <div className="mb-4 flex gap-4">
         <Select value={yearFilter} onValueChange={(value) => { setYearFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <IconFilter className="mr-2" size={16} />
             <SelectValue placeholder="Year" />
           </SelectTrigger>
@@ -176,7 +176,7 @@ const TournamentsPage: React.FC = () => {
         </Select>
         
         <Select value={leagueFilter} onValueChange={(value) => { setLeagueFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <SelectValue placeholder="League" />
           </SelectTrigger>
           <SelectContent>
@@ -190,7 +190,7 @@ const TournamentsPage: React.FC = () => {
         </Select>
 
         <Select value={playoffsFilter} onValueChange={(value) => { setPlayoffsFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <SelectValue placeholder="Playoffs" />
           </SelectTrigger>
           <SelectContent>
@@ -215,7 +215,7 @@ const TournamentsPage: React.FC = () => {
               <TableHead>Year</TableHead>
               <TableHead>Split</TableHead>
               <TableHead>Playoffs</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

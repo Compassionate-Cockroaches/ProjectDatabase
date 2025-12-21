@@ -159,7 +159,7 @@ const MatchesPage: React.FC = () => {
 
       <div className="mb-4 flex gap-4">
         <Select value={tournamentFilter} onValueChange={(value) => { setTournamentFilter(value); setPage(0); }}>
-          <SelectTrigger className="w-[280px]">
+          <SelectTrigger className="w-70">
             <IconFilter className="mr-2" size={16} />
             <SelectValue placeholder="Filter by Tournament" />
           </SelectTrigger>
@@ -188,7 +188,7 @@ const MatchesPage: React.FC = () => {
               <TableHead>Game #</TableHead>
               <TableHead>Patch</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
