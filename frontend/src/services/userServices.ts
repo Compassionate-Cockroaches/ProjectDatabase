@@ -2,8 +2,13 @@ import api from "./api";
 import type { User, UserCreate, UserUpdate } from "@/types/user";
 
 export const userService = {
-  getAll: async (): Promise<User[]> => {
-    const response = await api.get("/api/users/");
+  getAll: async (params?: { 
+    skip?: number; 
+    limit?: number;
+    sort_by?: string;
+    sort_order?: string;
+  }): Promise<User[]> => {
+    const response = await api.get("/api/users/", { params });
     return response.data;
   },
 

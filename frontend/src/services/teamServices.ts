@@ -2,7 +2,13 @@ import api from "./api";
 import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
 
 export const teamService = {
-  getAll: async (params?: { skip?: number; limit?: number; search?: string }): Promise<Team[]> => {
+  getAll: async (params?: { 
+    skip?: number; 
+    limit?: number; 
+    search?: string;
+    sort_by?: string;
+    sort_order?: string;
+  }): Promise<Team[]> => {
     const response = await api.get("/api/teams/", { params });
     return response.data;
   },
