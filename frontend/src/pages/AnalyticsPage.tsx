@@ -1,12 +1,22 @@
 import { useState } from "react";
 import {
-  usePlayerLeaderboard,
-  useTeamLeaderboard,
-  useDashboardStats,
-} from "../hooks/useAnalytics";
-import type { PlayerMetric, AnalyticsFilters } from "../types/analytics";
-import { Card } from "../components/ui/card";
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -24,30 +34,20 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import { Badge } from "../components/ui/badge";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-} from "recharts";
+  useDashboardStats,
+  usePlayerLeaderboard,
+  useTeamLeaderboard,
+} from "../hooks/useAnalytics";
+import type { AnalyticsFilters, PlayerMetric } from "../types/analytics";
 
 // Using chart colors from theme (chart-1 through chart-5)
 const CHART_COLORS = {
-  primary: "hsl(var(--chart-1))",
-  secondary: "hsl(var(--chart-2))",
-  tertiary: "hsl(var(--chart-3))",
-  quaternary: "hsl(var(--chart-4))",
-  quinary: "hsl(var(--chart-5))",
+  primary: "var(--chart-1)",
+  secondary: "var(--chart-2)",
+  tertiary: "var(--chart-3)",
+  quaternary: "var(--chart-4)",
+  quinary: "var(--chart-5)",
 };
 
 export default function AnalyticsPage() {
@@ -60,15 +60,18 @@ export default function AnalyticsPage() {
   });
 
   // Queries
-  const { data: dashboardStats, isLoading: dashboardLoading } = useDashboardStats();
-  const { data: playerLeaderboard, isLoading: playerLoading } = usePlayerLeaderboard(
-    playerMetric,
-    filters
-  );
-  const { data: teamLeaderboard, isLoading: teamLoading } = useTeamLeaderboard(filters);
+  const { data: dashboardStats, isLoading: dashboardLoading } =
+    useDashboardStats();
+  const { data: playerLeaderboard, isLoading: playerLoading } =
+    usePlayerLeaderboard(playerMetric, filters);
+  const { data: teamLeaderboard, isLoading: teamLoading } =
+    useTeamLeaderboard(filters);
 
   // Filter handlers
-  const handleFilterChange = (key: keyof AnalyticsFilters, value: string | number | undefined) => {
+  const handleFilterChange = (
+    key: keyof AnalyticsFilters,
+    value: string | number | undefined
+  ) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value === "" ? undefined : value,
@@ -123,26 +126,42 @@ export default function AnalyticsPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card className="p-6">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Teams</p>
-              <p className="text-3xl font-bold">{dashboardStats?.total_teams.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Teams
+              </p>
+              <p className="text-3xl font-bold">
+                {dashboardStats?.total_teams.toLocaleString()}
+              </p>
             </div>
           </Card>
           <Card className="p-6">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Players</p>
-              <p className="text-3xl font-bold">{dashboardStats?.total_players.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Players
+              </p>
+              <p className="text-3xl font-bold">
+                {dashboardStats?.total_players.toLocaleString()}
+              </p>
             </div>
           </Card>
           <Card className="p-6">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Tournaments</p>
-              <p className="text-3xl font-bold">{dashboardStats?.total_tournaments.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Tournaments
+              </p>
+              <p className="text-3xl font-bold">
+                {dashboardStats?.total_tournaments.toLocaleString()}
+              </p>
             </div>
           </Card>
           <Card className="p-6">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Matches</p>
-              <p className="text-3xl font-bold">{dashboardStats?.total_matches.toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Matches
+              </p>
+              <p className="text-3xl font-bold">
+                {dashboardStats?.total_matches.toLocaleString()}
+              </p>
             </div>
           </Card>
         </div>
@@ -160,7 +179,10 @@ export default function AnalyticsPage() {
               placeholder="e.g., 2024"
               value={filters.year || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleFilterChange("year", e.target.value ? parseInt(e.target.value) : undefined)
+                handleFilterChange(
+                  "year",
+                  e.target.value ? parseInt(e.target.value) : undefined
+                )
               }
             />
           </div>
@@ -170,14 +192,18 @@ export default function AnalyticsPage() {
               id="league"
               placeholder="e.g., LCK"
               value={filters.league || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange("league", e.target.value || undefined)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleFilterChange("league", e.target.value || undefined)
+              }
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="split">Split</Label>
             <Select
               value={filters.split || ""}
-              onValueChange={(value: string) => handleFilterChange("split", value || undefined)}
+              onValueChange={(value: string) =>
+                handleFilterChange("split", value || undefined)
+              }
             >
               <SelectTrigger id="split">
                 <SelectValue placeholder="Select split" />
@@ -193,7 +219,9 @@ export default function AnalyticsPage() {
             <Label htmlFor="position">Position</Label>
             <Select
               value={filters.position || ""}
-              onValueChange={(value: string) => handleFilterChange("position", value || undefined)}
+              onValueChange={(value: string) =>
+                handleFilterChange("position", value || undefined)
+              }
             >
               <SelectTrigger id="position">
                 <SelectValue placeholder="Select position" />
@@ -212,7 +240,10 @@ export default function AnalyticsPage() {
             <Select
               value={filters.playoffs?.toString() || ""}
               onValueChange={(value: string) =>
-                handleFilterChange("playoffs", value ? parseInt(value) : undefined)
+                handleFilterChange(
+                  "playoffs",
+                  value ? parseInt(value) : undefined
+                )
               }
             >
               <SelectTrigger id="playoffs">
@@ -233,7 +264,10 @@ export default function AnalyticsPage() {
               max="100"
               value={filters.limit || 10}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleFilterChange("limit", e.target.value ? parseInt(e.target.value) : 10)
+                handleFilterChange(
+                  "limit",
+                  e.target.value ? parseInt(e.target.value) : 10
+                )
               }
             />
           </div>
@@ -251,7 +285,9 @@ export default function AnalyticsPage() {
           <h2 className="text-xl font-semibold">Player Leaderboard</h2>
           <Select
             value={playerMetric}
-            onValueChange={(value: string) => setPlayerMetric(value as PlayerMetric)}
+            onValueChange={(value: string) =>
+              setPlayerMetric(value as PlayerMetric)
+            }
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue />
@@ -291,16 +327,30 @@ export default function AnalyticsPage() {
                   {playerLeaderboard.map((player, idx) => (
                     <TableRow key={player.player_id}>
                       <TableCell className="font-medium">{idx + 1}</TableCell>
-                      <TableCell className="font-medium">{player.player_name}</TableCell>
+                      <TableCell className="font-medium">
+                        {player.player_name}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{player.position}</Badge>
                       </TableCell>
-                      <TableCell className="text-right">{player.games_played}</TableCell>
-                      <TableCell className="text-right font-semibold">{player.kda}</TableCell>
-                      <TableCell className="text-right">{player.avg_dpm}</TableCell>
-                      <TableCell className="text-right">{player.avg_cspm}</TableCell>
-                      <TableCell className="text-right">{player.avg_vision}</TableCell>
-                      <TableCell className="text-right">{player.win_rate}%</TableCell>
+                      <TableCell className="text-right">
+                        {player.games_played}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {player.kda}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {player.avg_dpm}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {player.avg_cspm}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {player.avg_vision}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {player.win_rate}%
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -309,11 +359,18 @@ export default function AnalyticsPage() {
 
             {/* Player Chart */}
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Top 10 Players Visualization</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Top 10 Players Visualization
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={playerChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                  />
                   <YAxis />
                   <Tooltip />
                   <Legend />
@@ -324,16 +381,31 @@ export default function AnalyticsPage() {
 
             {/* Multi-metric comparison */}
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Multi-Metric Comparison</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Multi-Metric Comparison
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={playerChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                  />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="KDA" stroke={CHART_COLORS.quaternary} />
-                  <Line type="monotone" dataKey="Win Rate" stroke={CHART_COLORS.tertiary} />
+                  <Line
+                    type="monotone"
+                    dataKey="KDA"
+                    stroke={CHART_COLORS.quaternary}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Win Rate"
+                    stroke={CHART_COLORS.tertiary}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -341,7 +413,9 @@ export default function AnalyticsPage() {
         ) : (
           <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
             <p>No player data available for the current filters.</p>
-            <p className="text-sm mt-2">Try adjusting your filters or resetting them.</p>
+            <p className="text-sm mt-2">
+              Try adjusting your filters or resetting them.
+            </p>
           </div>
         )}
       </Card>
@@ -372,13 +446,21 @@ export default function AnalyticsPage() {
                   {teamLeaderboard.map((team, idx) => (
                     <TableRow key={team.team_id}>
                       <TableCell className="font-medium">{idx + 1}</TableCell>
-                      <TableCell className="font-medium">{team.team_name}</TableCell>
-                      <TableCell className="text-right">{team.matches_played}</TableCell>
+                      <TableCell className="font-medium">
+                        {team.team_name}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {team.matches_played}
+                      </TableCell>
                       <TableCell className="text-right font-semibold">
                         {team.wins}
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground">{team.losses}</TableCell>
-                      <TableCell className="text-right font-bold">{team.win_rate}%</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {team.losses}
+                      </TableCell>
+                      <TableCell className="text-right font-bold">
+                        {team.win_rate}%
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -387,11 +469,18 @@ export default function AnalyticsPage() {
 
             {/* Team Win Rate Bar Chart */}
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4">Team Win Rate Comparison</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Team Win Rate Comparison
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={teamChartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                  />
                   <YAxis />
                   <Tooltip />
                   <Legend />
@@ -403,18 +492,27 @@ export default function AnalyticsPage() {
             {/* Win/Loss Pie Chart */}
             <div className="mt-6 grid md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Win/Loss Distribution (Top Team)</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Win/Loss Distribution (Top Team)
+                </h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={[
                         { name: "Wins", value: teamLeaderboard[0]?.wins || 0 },
-                        { name: "Losses", value: teamLeaderboard[0]?.losses || 0 },
+                        {
+                          name: "Losses",
+                          value: teamLeaderboard[0]?.losses || 0,
+                        },
                       ]}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry: any) => `${entry.name}: ${((entry.percent || 0) * 100).toFixed(0)}%`}
+                      label={(entry: any) =>
+                        `${entry.name}: ${((entry.percent || 0) * 100).toFixed(
+                          0
+                        )}%`
+                      }
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -432,7 +530,12 @@ export default function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={teamChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                    <XAxis
+                      dataKey="name"
+                      angle={-45}
+                      textAnchor="end"
+                      height={100}
+                    />
                     <YAxis />
                     <Tooltip />
                     <Legend />
@@ -446,7 +549,9 @@ export default function AnalyticsPage() {
         ) : (
           <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
             <p>No team data available for the current filters.</p>
-            <p className="text-sm mt-2">Try adjusting your filters or resetting them.</p>
+            <p className="text-sm mt-2">
+              Try adjusting your filters or resetting them.
+            </p>
           </div>
         )}
       </Card>
