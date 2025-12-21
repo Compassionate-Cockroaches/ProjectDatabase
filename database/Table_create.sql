@@ -57,7 +57,7 @@ CREATE TABLE raw_match_data (
     ckpm DECIMAL(10,4),
     firstdragon TINYINT,
     dragons INT,
-    opp_dragons INT,
+    `opp dragons` INT,
     elementaldrakes INT,
     opp_elementaldrakes INT,
     infernals INT,
@@ -66,7 +66,7 @@ CREATE TABLE raw_match_data (
     oceans INT,
     chemtechs INT,
     hextechs INT,
-    dragons_type_unknown INT,
+    `dragons (type unknown)` INT,
     elders INT,
     opp_elders INT,
     firstherald TINYINT,
@@ -103,12 +103,12 @@ CREATE TABLE raw_match_data (
     vspm DECIMAL(10,4),
     totalgold INT,
     earnedgold INT,
-    earned_gpm DECIMAL(10,4),
+    `earned gpm` DECIMAL(10,4),
     earnedgoldshare DECIMAL(10,6),
     goldspent INT,
     gspd INT,
     gpr DECIMAL(10,4),
-    total_cs INT,
+    `total cs` INT,
     minionkills INT,
     monsterkills INT,
     monsterkillsownjungle INT,
@@ -145,7 +145,7 @@ CREATE TABLE matches (
     data_completeness VARCHAR(20),
     url TEXT,
     FOREIGN KEY (tournament_id)
-        REFERENCES Tournament(id)
+        REFERENCES tournaments(id)
         ON DELETE CASCADE
 );
 
@@ -161,10 +161,10 @@ CREATE TABLE team_tournaments (
     tournament_id CHAR(36),
     PRIMARY KEY (team_id, tournament_id),
     FOREIGN KEY (team_id)
-        REFERENCES Team(id)
+        REFERENCES teams(id)
         ON DELETE CASCADE,
     FOREIGN KEY (tournament_id)
-        REFERENCES Tournament(id)
+        REFERENCES tournaments(id)
         ON DELETE CASCADE
 );
 
@@ -215,20 +215,12 @@ CREATE TABLE match_player_stats (
     
     PRIMARY KEY (match_id, player_id),
     FOREIGN KEY (match_id)
-        REFERENCES Matches(id)
+        REFERENCES matches(id)
         ON DELETE CASCADE,
     FOREIGN KEY (player_id)
-        REFERENCES Player(id)
+        REFERENCES players(id)
         ON DELETE CASCADE,
     FOREIGN KEY (team_id)
-        REFERENCES Team(id)
+        REFERENCES teams(id)
         ON DELETE CASCADE
 );
-
---- Indexes
-CREATE INDEX idx_matches_date ON Matches(match_date);
-CREATE INDEX idx_matches_tournament ON Matches(tournament_id);
-CREATE INDEX idx_player_stats_player ON Match_Player_Stats(player_id);
-CREATE INDEX idx_player_stats_team ON Match_Player_Stats(team_id);
-CREATE INDEX idx_player_stats_result ON Match_Player_Stats(result);
-

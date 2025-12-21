@@ -1,21 +1,22 @@
 use lol_esports_DB;
 
 -- Drop existing trigger if it exists
-DROP TRIGGER IF EXISTS prevent_duplicate_match;
+DROP TRIGGER IF EXISTS validate_match_player;
 
--- Create trigger (no DELIMITER needed in DBeaver)
-CREATE TRIGGER prevent_duplicate_match
-BEFORE INSERT ON matches
+-- Create trigger 
+CREATE TRIGGER validate_match_player
+BEFORE INSERT ON match_player_stats
 FOR EACH ROW
 BEGIN
-    DECLARE match_count INT;
-    
-    SELECT COUNT(*) INTO match_count
-    FROM matches
-    WHERE external_id = NEW.external_id;
-    
-    IF match_count > 0 THEN
+    -- player_id phải tồn tại (player-level data)
+    IF NEW.player_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Match with this external_id already exists';
+        SET MESSAGE_TEXT = 'Invalid record: non-player data is not allowed in match_player_stats';
+    END IF;
+
+    -- side chỉ được là BLUE hoặc RED
+    IF NEW.side NOT IN ('BLUE', 'RED') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid side value (must be BLUE or RED)';
     END IF;
 END;
