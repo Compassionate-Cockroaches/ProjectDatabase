@@ -12,6 +12,7 @@ import TeamsPage from "./pages/TeamsPage";
 import PlayersPage from "./pages/PlayersPage";
 import TournamentsPage from "./pages/TournamentsPage";
 import MatchesPage from "./pages/MatchesPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 export function App() {
   return (
@@ -38,6 +39,7 @@ export function App() {
             <Route path="players" element={<PlayersPage />} />
             <Route path="tournaments" element={<TournamentsPage />} />
             <Route path="matches" element={<MatchesPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
           </Route>
           
           {/* Catch all */}

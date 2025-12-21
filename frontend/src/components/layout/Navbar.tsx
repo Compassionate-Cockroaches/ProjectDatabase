@@ -9,6 +9,7 @@ import {
   IconUser,
   IconTrophy,
   IconSwords,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -79,6 +80,12 @@ export default function Navbar() {
                   <Button variant="ghost" size="sm" className="gap-2">
                     <IconSwords size={18} />
                     <span className="hidden md:inline">Matches</span>
+                  </Button>
+                </Link>
+                <Link to="/analytics">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <IconChartBar size={18} />
+                    <span className="hidden md:inline">Analytics</span>
                   </Button>
                 </Link>
 
