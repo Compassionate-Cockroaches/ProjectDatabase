@@ -140,7 +140,6 @@ async def get_team_tournaments(
             Tournament.year,
             Tournament.split,
             Tournament.playoffs,
-            TeamTournament.result,
         )
         .join(TeamTournament, TeamTournament.tournament_id == Tournament.id)
         .where(TeamTournament.team_id == team_id)
@@ -150,21 +149,23 @@ async def get_team_tournaments(
     results = session.exec(statement).all()
     
     tournaments = []
-    for tournament_id, league, year, split, playoffs, result in results:
-        # Count wins and losses in this tournament
-        match_stats = (
+    for tournament_id, league, year, split, playoffs in results:
+        # Count wins and losses in this tournament by counting unique matches
+        # Get distinct matches with their results
+        match_results_stmt = (
             select(
-                func.count(MatchPlayerStats.match_id.distinct()).label("total_games"),
-                func.sum(cast(MatchPlayerStats.result, Integer)).label("wins"),
+                Match.id,
+                func.max(cast(MatchPlayerStats.result, Integer)).label("won")
             )
-            .join(Match, MatchPlayerStats.match_id == Match.id)
+            .join(MatchPlayerStats, MatchPlayerStats.match_id == Match.id)
             .where(MatchPlayerStats.team_id == team_id)
             .where(Match.tournament_id == tournament_id)
+            .group_by(Match.id)
         )
-        stats_result = session.exec(match_stats).first()
+        match_results = session.exec(match_results_stmt).all()
         
-        total_games = stats_result.total_games or 0
-        wins = stats_result.wins or 0
+        total_games = len(match_results)
+        wins = sum(1 for _, won in match_results if won)
         losses = total_games - wins
         
         tournaments.append({
@@ -173,7 +174,6 @@ async def get_team_tournaments(
             "year": year,
             "split": split,
             "playoffs": playoffs,
-            "result": result,
             "wins": wins,
             "losses": losses,
             "total_games": total_games,

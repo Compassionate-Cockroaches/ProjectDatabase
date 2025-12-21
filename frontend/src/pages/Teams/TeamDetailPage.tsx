@@ -269,7 +269,6 @@ export default function TeamDetailPage() {
                     <TableHead className="text-right">Wins</TableHead>
                     <TableHead className="text-right">Losses</TableHead>
                     <TableHead className="text-right">Win Rate</TableHead>
-                    <TableHead>Result</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -298,13 +297,6 @@ export default function TeamDetailPage() {
                           ? ((tournament.wins / tournament.total_games) * 100).toFixed(1)
                           : 0}
                         %
-                      </TableCell>
-                      <TableCell>
-                        {tournament.result ? (
-                          <Badge variant="secondary">{tournament.result}</Badge>
-                        ) : (
-                          "-"
-                        )}
                       </TableCell>
                     </TableRow>
                   ))}
