@@ -53,6 +53,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 const LEAGUES = [
@@ -343,7 +344,12 @@ const TournamentsPage: React.FC = () => {
               tournaments.map((tournament) => (
                 <TableRow key={tournament.id}>
                   <TableCell className="font-medium">
-                    {tournament.league}
+                    <Link
+                      to={`/tournaments/${tournament.id}`}
+                      className="hover:text-primary hover:underline transition-colors"
+                    >
+                      {tournament.league}
+                    </Link>
                   </TableCell>
                   <TableCell>{tournament.year}</TableCell>
                   <TableCell>{tournament.split || "-"}</TableCell>
