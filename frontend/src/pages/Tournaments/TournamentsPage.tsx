@@ -100,9 +100,10 @@ const TournamentsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentTournament, setCurrentTournament] = useState<Tournament | null>(
-    null
+    null,
   );
-  const [tournamentToDelete, setTournamentToDelete] = useState<Tournament | null>(null);
+  const [tournamentToDelete, setTournamentToDelete] =
+    useState<Tournament | null>(null);
   const [newTournament, setNewTournament] = useState<TournamentCreate>({
     league: "",
     year: new Date().getFullYear(),
@@ -567,17 +568,25 @@ const TournamentsPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the tournament "{tournamentToDelete?.league} {tournamentToDelete?.year} {tournamentToDelete?.split}". This action cannot be undone.
+              This will permanently delete the tournament "
+              {tournamentToDelete?.league} {tournamentToDelete?.year}{" "}
+              {tournamentToDelete?.split}". This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

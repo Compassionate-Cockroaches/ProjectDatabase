@@ -140,11 +140,17 @@ export default function TournamentDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 rounded-lg bg-muted/50">
               <p className="text-sm text-muted-foreground mb-1">Total Teams</p>
-              <p className="text-2xl font-bold">{tournament.total_teams || 0}</p>
+              <p className="text-2xl font-bold">
+                {tournament.total_teams || 0}
+              </p>
             </div>
             <div className="text-center p-4 rounded-lg bg-muted/50">
-              <p className="text-sm text-muted-foreground mb-1">Total Matches</p>
-              <p className="text-2xl font-bold">{tournament.total_matches || 0}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Total Matches
+              </p>
+              <p className="text-2xl font-bold">
+                {tournament.total_matches || 0}
+              </p>
             </div>
             <div className="text-center p-4 rounded-lg bg-muted/50">
               <p className="text-sm text-muted-foreground mb-1">Avg Duration</p>
@@ -239,37 +245,39 @@ export default function TournamentDetailPage() {
             <CardContent>
               {stats.top_players && stats.top_players.length > 0 ? (
                 <div className="space-y-2">
-                  {stats.top_players.slice(0, 5).map((player: any, idx: number) => (
-                    <div
-                      key={player.player_id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-muted-foreground">
-                          #{idx + 1}
-                        </span>
-                        <div>
-                          <Link
-                            to={`/players/${player.player_id}`}
-                            className="font-medium hover:text-primary hover:underline transition-colors"
-                          >
-                            {player.player_name}
-                          </Link>
-                          <p className="text-sm text-muted-foreground">
-                            {player.team_name}
+                  {stats.top_players
+                    .slice(0, 5)
+                    .map((player: any, idx: number) => (
+                      <div
+                        key={player.player_id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-bold text-muted-foreground">
+                            #{idx + 1}
+                          </span>
+                          <div>
+                            <Link
+                              to={`/players/${player.player_id}`}
+                              className="font-medium hover:text-primary hover:underline transition-colors"
+                            >
+                              {player.player_name}
+                            </Link>
+                            <p className="text-sm text-muted-foreground">
+                              {player.team_name}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary">
+                            {player.avg_kda?.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {player.games_played} games
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-primary">
-                          {player.avg_kda?.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {player.games_played} games
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
@@ -301,7 +309,11 @@ export default function TournamentDetailPage() {
                       fill={CHART_COLORS.quaternary}
                       name="Picks"
                     />
-                    <Bar dataKey="wins" fill={CHART_COLORS.tertiary} name="Wins" />
+                    <Bar
+                      dataKey="wins"
+                      fill={CHART_COLORS.tertiary}
+                      name="Wins"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -340,14 +352,21 @@ export default function TournamentDetailPage() {
                         <div className="flex items-center gap-4">
                           {match.teams?.map((team: any, idx: number) => (
                             <div key={idx} className="flex items-center gap-2">
-                              <span className={`font-medium ${team.result ? 'text-green-500' : 'text-red-500'}`}>
+                              <span
+                                className={`font-medium ${team.result ? "text-green-500" : "text-red-500"}`}
+                              >
                                 {team.team_name}
                               </span>
-                              <Badge variant={team.result ? "default" : "outline"} className="text-xs">
+                              <Badge
+                                variant={team.result ? "default" : "outline"}
+                                className="text-xs"
+                              >
                                 {team.result ? "W" : "L"}
                               </Badge>
                               {idx === 0 && match.teams.length > 1 && (
-                                <span className="text-muted-foreground">vs</span>
+                                <span className="text-muted-foreground">
+                                  vs
+                                </span>
                               )}
                             </div>
                           ))}
@@ -358,7 +377,9 @@ export default function TournamentDetailPage() {
                               {new Date(match.match_date).toLocaleDateString()}
                             </span>
                           )}
-                          {match.patch && <Badge variant="outline">{match.patch}</Badge>}
+                          {match.patch && (
+                            <Badge variant="outline">{match.patch}</Badge>
+                          )}
                           {match.game_length && (
                             <span>
                               {Math.floor(match.game_length / 60)}m{" "}

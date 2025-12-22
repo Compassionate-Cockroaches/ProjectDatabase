@@ -114,7 +114,10 @@ export default function PlayerDetailPage() {
 
   const performanceData = [
     { name: "Wins", value: player.total_wins || 0 },
-    { name: "Losses", value: (player.total_games || 0) - (player.total_wins || 0) },
+    {
+      name: "Losses",
+      value: (player.total_games || 0) - (player.total_wins || 0),
+    },
   ];
 
   return (
@@ -221,7 +224,8 @@ export default function PlayerDetailPage() {
                   labelLine={false}
                   label={(entry) =>
                     `${entry.name}: ${entry.value} (${(
-                      (entry.value / (player.total_games || 1)) * 100
+                      (entry.value / (player.total_games || 1)) *
+                      100
                     ).toFixed(0)}%)`
                   }
                   outerRadius={80}
@@ -284,7 +288,8 @@ export default function PlayerDetailPage() {
                           {champ.avg_kda?.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-right text-sm text-muted-foreground">
-                          {champ.avg_kills?.toFixed(1)}/{champ.avg_deaths?.toFixed(1)}/
+                          {champ.avg_kills?.toFixed(1)}/
+                          {champ.avg_deaths?.toFixed(1)}/
                           {champ.avg_assists?.toFixed(1)}
                         </TableCell>
                       </TableRow>
@@ -414,9 +419,7 @@ export default function PlayerDetailPage() {
                           >
                             {match.result ? "Win" : "Loss"}
                           </Badge>
-                          <span className="font-medium">
-                            {match.champion}
-                          </span>
+                          <span className="font-medium">{match.champion}</span>
                           <span className="text-muted-foreground">
                             {match.kills}/{match.deaths}/{match.assists}
                           </span>
@@ -427,12 +430,15 @@ export default function PlayerDetailPage() {
                               {new Date(match.match_date).toLocaleDateString()}
                             </span>
                           )}
-                          {match.team_name && (
-                            <span>{match.team_name}</span>
-                          )}
+                          {match.team_name && <span>{match.team_name}</span>}
                           <span>CS: {match.total_cs || 0}</span>
-                          <span>Gold: {match.totalgold?.toLocaleString() || 0}</span>
-                          <span>DMG: {match.damagetochampions?.toLocaleString() || 0}</span>
+                          <span>
+                            Gold: {match.totalgold?.toLocaleString() || 0}
+                          </span>
+                          <span>
+                            DMG:{" "}
+                            {match.damagetochampions?.toLocaleString() || 0}
+                          </span>
                         </div>
                       </div>
                       <Link to={`/matches/${match.match_id}`}>

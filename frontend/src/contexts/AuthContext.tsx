@@ -1,9 +1,9 @@
+import api from "@/services/api";
+import * as authService from "@/services/authService";
+import type { AuthUser, LoginRequest, RegisterRequest } from "@/types/auth";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
-import * as authService from "../services/authService";
-import type { AuthUser, LoginRequest, RegisterRequest } from "../types/auth";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -78,7 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Register user
       await authService.register(userData);
-
 
       // Auto-login after registration
       await login({

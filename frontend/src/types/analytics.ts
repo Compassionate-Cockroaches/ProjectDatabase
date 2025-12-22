@@ -49,7 +49,10 @@ export interface DashboardStats {
 }
 
 export type PlayerMetric = "kda" | "dpm" | "cspm" | "vision" | "winrate";
-export type TournamentMetric = "total_matches" | "total_teams" | "avg_game_duration";
+export type TournamentMetric =
+  | "total_matches"
+  | "total_teams"
+  | "avg_game_duration";
 
 export interface AnalyticsFilters {
   year?: number;

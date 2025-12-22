@@ -1,20 +1,6 @@
-import {
-  IconChevronDown,
-  IconDashboard,
-  IconLogin,
-  IconLogout,
-  IconUserPlus,
-  IconUsers,
-  IconShield,
-  IconUser,
-  IconTrophy,
-  IconSwords,
-  IconChartBar,
-} from "@tabler/icons-react";
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,12 +8,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
+import {
+  IconChartBar,
+  IconChevronDown,
+  IconDashboard,
+  IconLogin,
+  IconLogout,
+  IconShield,
+  IconSwords,
+  IconTrophy,
+  IconUser,
+  IconUserPlus,
+  IconUsers,
+} from "@tabler/icons-react";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
-  
+
   // Helper function to check if current path matches
   const isActive = (path: string) => {
     if (path === "/") {
@@ -56,43 +56,71 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 <Link to="/">
-                  <Button variant={isActive("/") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconDashboard size={18} />
                     <span className="hidden md:inline">Dashboard</span>
                   </Button>
                 </Link>
                 <Link to="/users">
-                  <Button variant={isActive("/users") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/users") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconUsers size={18} />
                     <span className="hidden md:inline">Users</span>
                   </Button>
                 </Link>
                 <Link to="/teams">
-                  <Button variant={isActive("/teams") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/teams") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconShield size={18} />
                     <span className="hidden md:inline">Teams</span>
                   </Button>
                 </Link>
                 <Link to="/players">
-                  <Button variant={isActive("/players") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/players") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconUser size={18} />
                     <span className="hidden md:inline">Players</span>
                   </Button>
                 </Link>
                 <Link to="/tournaments">
-                  <Button variant={isActive("/tournaments") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/tournaments") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconTrophy size={18} />
                     <span className="hidden md:inline">Tournaments</span>
                   </Button>
                 </Link>
                 <Link to="/matches">
-                  <Button variant={isActive("/matches") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/matches") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconSwords size={18} />
                     <span className="hidden md:inline">Matches</span>
                   </Button>
                 </Link>
                 <Link to="/analytics">
-                  <Button variant={isActive("/analytics") ? "secondary" : "ghost"} size="sm" className="gap-2">
+                  <Button
+                    variant={isActive("/analytics") ? "secondary" : "ghost"}
+                    size="sm"
+                    className="gap-2"
+                  >
                     <IconChartBar size={18} />
                     <span className="hidden md:inline">Analytics</span>
                   </Button>

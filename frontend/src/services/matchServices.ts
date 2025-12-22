@@ -2,9 +2,9 @@ import api from "./api";
 import type { Match, MatchCreate, MatchUpdate } from "@/types/match";
 
 export const matchService = {
-  getAll: async (params?: { 
-    skip?: number; 
-    limit?: number; 
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
     tournament_id?: string;
     date_from?: string;
     date_to?: string;

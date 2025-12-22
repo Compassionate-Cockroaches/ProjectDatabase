@@ -1,3 +1,29 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useDashboardStats,
+  usePlayerLeaderboard,
+  useTeamLeaderboard,
+} from "@/hooks/useAnalytics";
+import type { AnalyticsFilters, PlayerMetric } from "@/types/analytics";
 import { useState } from "react";
 import {
   Bar,
@@ -14,32 +40,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table";
-import {
-  useDashboardStats,
-  usePlayerLeaderboard,
-  useTeamLeaderboard,
-} from "../hooks/useAnalytics";
-import type { AnalyticsFilters, PlayerMetric } from "../types/analytics";
 
 // Using chart colors from theme (chart-1 through chart-5)
 const CHART_COLORS = {
@@ -70,7 +70,7 @@ export default function AnalyticsPage() {
   // Filter handlers
   const handleFilterChange = (
     key: keyof AnalyticsFilters,
-    value: string | number | undefined
+    value: string | number | undefined,
   ) => {
     setFilters((prev) => ({
       ...prev,
@@ -181,7 +181,7 @@ export default function AnalyticsPage() {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleFilterChange(
                   "year",
-                  e.target.value ? parseInt(e.target.value) : undefined
+                  e.target.value ? parseInt(e.target.value) : undefined,
                 )
               }
             />
@@ -242,7 +242,7 @@ export default function AnalyticsPage() {
               onValueChange={(value: string) =>
                 handleFilterChange(
                   "playoffs",
-                  value ? parseInt(value) : undefined
+                  value ? parseInt(value) : undefined,
                 )
               }
             >
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleFilterChange(
                   "limit",
-                  e.target.value ? parseInt(e.target.value) : 10
+                  e.target.value ? parseInt(e.target.value) : 10,
                 )
               }
             />
@@ -510,7 +510,7 @@ export default function AnalyticsPage() {
                       labelLine={false}
                       label={(entry: any) =>
                         `${entry.name}: ${((entry.percent || 0) * 100).toFixed(
-                          0
+                          0,
                         )}%`
                       }
                       outerRadius={80}

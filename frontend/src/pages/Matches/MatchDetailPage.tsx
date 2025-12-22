@@ -64,7 +64,7 @@ export default function MatchDetailPage() {
   }
 
   const { match, tournament, teams } = matchDetails;
-  
+
   // Separate players by team
   const teamMap: Record<string, any[]> = {};
   playerStats.forEach((player: any) => {
@@ -274,7 +274,7 @@ export default function MatchDetailPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             {((player.damagetochampions || 0) / 1000).toFixed(
-                              1
+                              1,
                             )}
                             k
                           </TableCell>
@@ -340,9 +340,9 @@ export default function MatchDetailPage() {
               <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
                 <div className="text-right">
                   <p className="text-xl font-semibold">
-                    {((teamTotals[winningTeam.team_id]?.gold || 0) / 1000).toFixed(
-                      1
-                    )}
+                    {(
+                      (teamTotals[winningTeam.team_id]?.gold || 0) / 1000
+                    ).toFixed(1)}
                     k
                   </p>
                 </div>
@@ -351,9 +351,9 @@ export default function MatchDetailPage() {
                 </div>
                 <div>
                   <p className="text-xl font-semibold">
-                    {((teamTotals[losingTeam.team_id]?.gold || 0) / 1000).toFixed(
-                      1
-                    )}
+                    {(
+                      (teamTotals[losingTeam.team_id]?.gold || 0) / 1000
+                    ).toFixed(1)}
                     k
                   </p>
                 </div>

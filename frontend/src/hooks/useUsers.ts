@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "@/services/userServices";
-import type { UserCreate, UserUpdate } from "../types/user";
+import type { UserCreate, UserUpdate } from "@/types/user";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useUsers = (params?: { 
-  skip?: number; 
+export const useUsers = (params?: {
+  skip?: number;
   limit?: number;
   sort_by?: string;
   sort_order?: string;

@@ -1,4 +1,7 @@
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDashboardStats } from "@/hooks/useAnalytics";
 import {
   IconChartBar,
   IconPlus,
@@ -9,10 +12,7 @@ import {
   IconUser,
   IconUsers,
 } from "@tabler/icons-react";
-import { Card } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { useAuth } from "../contexts/AuthContext";
-import { useDashboardStats } from "../hooks/useAnalytics";
+import { Link } from "react-router-dom";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -92,7 +92,9 @@ export default function HomePage() {
             <Card className="p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Tournaments</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Tournaments
+                  </p>
                   <h3 className="text-3xl font-bold mt-2">
                     {stats?.total_tournaments.toLocaleString() || 0}
                   </h3>
@@ -106,7 +108,9 @@ export default function HomePage() {
             <Card className="p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Matches</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Matches
+                  </p>
                   <h3 className="text-3xl font-bold mt-2">
                     {stats?.total_matches.toLocaleString() || 0}
                   </h3>
@@ -120,7 +124,9 @@ export default function HomePage() {
             <Card className="p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Teams</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Teams
+                  </p>
                   <h3 className="text-3xl font-bold mt-2">
                     {stats?.total_teams.toLocaleString() || 0}
                   </h3>
@@ -134,7 +140,9 @@ export default function HomePage() {
             <Card className="p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Players</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Players
+                  </p>
                   <h3 className="text-3xl font-bold mt-2">
                     {stats?.total_players.toLocaleString() || 0}
                   </h3>
@@ -157,7 +165,10 @@ export default function HomePage() {
               <Card className="p-6 hover:shadow-lg hover:border-primary/50 transition-all cursor-pointer group">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:scale-110 transition-all">
-                    <action.icon size={24} className="text-muted-foreground group-hover:text-primary-foreground transition-colors" />
+                    <action.icon
+                      size={24}
+                      className="text-muted-foreground group-hover:text-primary-foreground transition-colors"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold group-hover:text-primary transition-colors">
@@ -187,8 +198,9 @@ export default function HomePage() {
           <div className="flex-1">
             <h3 className="font-semibold text-lg mb-2">Getting Started</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Start by adding your first tournament, teams, and players. Then record matches and
-              explore the analytics to gain insights into player and team performance.
+              Start by adding your first tournament, teams, and players. Then
+              record matches and explore the analytics to gain insights into
+              player and team performance.
             </p>
             <div className="flex gap-3">
               <Link to="/tournaments">

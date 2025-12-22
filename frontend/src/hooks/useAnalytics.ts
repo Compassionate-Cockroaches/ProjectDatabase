@@ -1,22 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
 import {
+  getDashboardStats,
   getPlayerLeaderboard,
   getTeamLeaderboard,
   getTournamentLeaderboard,
-  getDashboardStats,
-} from "../services/analyticsService";
+} from "@/services/analyticsService";
 import type {
+  AnalyticsFilters,
   PlayerMetric,
   TournamentMetric,
-  AnalyticsFilters,
-} from "../types/analytics";
+} from "@/types/analytics";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Hook to fetch player leaderboard
  */
 export const usePlayerLeaderboard = (
   metric: PlayerMetric,
-  filters: AnalyticsFilters = {}
+  filters: AnalyticsFilters = {},
 ) => {
   return useQuery({
     queryKey: ["analytics", "players", metric, filters],
@@ -39,7 +39,7 @@ export const useTeamLeaderboard = (filters: AnalyticsFilters = {}) => {
  */
 export const useTournamentLeaderboard = (
   metric: TournamentMetric,
-  filters: AnalyticsFilters = {}
+  filters: AnalyticsFilters = {},
 ) => {
   return useQuery({
     queryKey: ["analytics", "tournaments", metric, filters],

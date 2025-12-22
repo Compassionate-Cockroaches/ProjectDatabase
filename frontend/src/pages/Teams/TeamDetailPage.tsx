@@ -146,7 +146,8 @@ export default function TeamDetailPage() {
                 <div>
                   <h1 className="text-3xl font-bold">{team.team_name}</h1>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {teamStats.tournaments_participated || 0} Tournaments Participated
+                    {teamStats.tournaments_participated || 0} Tournaments
+                    Participated
                   </p>
                 </div>
               </div>
@@ -178,7 +179,9 @@ export default function TeamDetailPage() {
               </p>
             </div>
             <div className="text-center p-4 rounded-lg bg-muted/50">
-              <p className="text-sm text-muted-foreground mb-1">Avg Game Duration</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Avg Game Duration
+              </p>
               <p className="text-2xl font-bold">
                 {Math.floor((teamStats.avg_game_duration || 0) / 60)}m
               </p>
@@ -255,7 +258,9 @@ export default function TeamDetailPage() {
         <CardContent>
           {tournamentsLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <p className="text-muted-foreground">Loading tournament history...</p>
+              <p className="text-muted-foreground">
+                Loading tournament history...
+              </p>
             </div>
           ) : tournaments && tournaments.length > 0 ? (
             <div className="overflow-x-auto">
@@ -294,7 +299,10 @@ export default function TeamDetailPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         {tournament.total_games > 0
-                          ? ((tournament.wins / tournament.total_games) * 100).toFixed(1)
+                          ? (
+                              (tournament.wins / tournament.total_games) *
+                              100
+                            ).toFixed(1)
                           : 0}
                         %
                       </TableCell>
@@ -365,7 +373,8 @@ export default function TeamDetailPage() {
                         {player.avg_kda?.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground">
-                        {player.avg_kills?.toFixed(1)}/{player.avg_deaths?.toFixed(1)}/
+                        {player.avg_kills?.toFixed(1)}/
+                        {player.avg_deaths?.toFixed(1)}/
                         {player.avg_assists?.toFixed(1)}
                       </TableCell>
                     </TableRow>
@@ -424,7 +433,9 @@ export default function TeamDetailPage() {
                           {match.tournament_name && (
                             <span>{match.tournament_name}</span>
                           )}
-                          {match.patch && <Badge variant="outline">{match.patch}</Badge>}
+                          {match.patch && (
+                            <Badge variant="outline">{match.patch}</Badge>
+                          )}
                           {match.game_length && (
                             <span>
                               {Math.floor(match.game_length / 60)}m{" "}

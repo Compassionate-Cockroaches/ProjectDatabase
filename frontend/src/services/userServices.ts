@@ -2,8 +2,8 @@ import api from "./api";
 import type { User, UserCreate, UserUpdate } from "@/types/user";
 
 export const userService = {
-  getAll: async (params?: { 
-    skip?: number; 
+  getAll: async (params?: {
+    skip?: number;
     limit?: number;
     sort_by?: string;
     sort_order?: string;

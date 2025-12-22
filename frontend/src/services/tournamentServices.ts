@@ -1,12 +1,16 @@
 import api from "./api";
-import type { Tournament, TournamentCreate, TournamentUpdate } from "@/types/tournament";
+import type {
+  Tournament,
+  TournamentCreate,
+  TournamentUpdate,
+} from "@/types/tournament";
 
 export const tournamentService = {
-  getAll: async (params?: { 
-    skip?: number; 
-    limit?: number; 
-    year?: number; 
-    league?: string; 
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    year?: number;
+    league?: string;
     playoffs?: boolean;
     sort_by?: string;
     sort_order?: string;
@@ -39,8 +43,13 @@ export const tournamentService = {
     return response.data;
   },
 
-  getMatches: async (id: string, params?: { skip?: number; limit?: number }) => {
-    const response = await api.get(`/api/tournaments/${id}/matches`, { params });
+  getMatches: async (
+    id: string,
+    params?: { skip?: number; limit?: number },
+  ) => {
+    const response = await api.get(`/api/tournaments/${id}/matches`, {
+      params,
+    });
     return response.data;
   },
 

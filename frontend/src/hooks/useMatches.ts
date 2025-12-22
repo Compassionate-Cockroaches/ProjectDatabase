@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { matchService } from "@/services/matchServices";
 import type { MatchCreate, MatchUpdate } from "@/types/match";
 
-export const useMatches = (params?: { 
-  skip?: number; 
-  limit?: number; 
+export const useMatches = (params?: {
+  skip?: number;
+  limit?: number;
   tournament_id?: string;
   date_from?: string;
   date_to?: string;
@@ -28,7 +28,7 @@ export const useMatch = (id: string) => {
 export const useCreateMatch = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({ 
+  return useMutation({
     mutationFn: (data: MatchCreate) => matchService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });

@@ -2,10 +2,10 @@ import api from "./api";
 import type { Player, PlayerCreate, PlayerUpdate } from "@/types/player";
 
 export const playerService = {
-  getAll: async (params?: { 
-    skip?: number; 
-    limit?: number; 
-    search?: string; 
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
     position?: string;
     sort_by?: string;
     sort_order?: string;
@@ -33,7 +33,10 @@ export const playerService = {
     await api.delete(`/api/players/${id}`);
   },
 
-  getMatches: async (id: string, params?: { skip?: number; limit?: number }) => {
+  getMatches: async (
+    id: string,
+    params?: { skip?: number; limit?: number },
+  ) => {
     const response = await api.get(`/api/players/${id}/matches`, { params });
     return response.data;
   },

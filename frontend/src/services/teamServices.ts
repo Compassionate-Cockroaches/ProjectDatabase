@@ -2,9 +2,9 @@ import api from "./api";
 import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
 
 export const teamService = {
-  getAll: async (params?: { 
-    skip?: number; 
-    limit?: number; 
+  getAll: async (params?: {
+    skip?: number;
+    limit?: number;
     search?: string;
     sort_by?: string;
     sort_order?: string;
@@ -37,7 +37,10 @@ export const teamService = {
     return response.data;
   },
 
-  getMatches: async (id: string, params?: { skip?: number; limit?: number }) => {
+  getMatches: async (
+    id: string,
+    params?: { skip?: number; limit?: number },
+  ) => {
     const response = await api.get(`/api/teams/${id}/matches`, { params });
     return response.data;
   },

@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tournamentService } from "@/services/tournamentServices";
 import type { TournamentCreate, TournamentUpdate } from "@/types/tournament";
 
-export const useTournaments = (params?: { 
-  skip?: number; 
-  limit?: number; 
-  year?: number; 
-  league?: string; 
+export const useTournaments = (params?: {
+  skip?: number;
+  limit?: number;
+  year?: number;
+  league?: string;
   playoffs?: boolean;
   sort_by?: string;
   sort_order?: string;
@@ -28,7 +28,7 @@ export const useTournament = (id: string) => {
 export const useCreateTournament = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({ 
+  return useMutation({
     mutationFn: (data: TournamentCreate) => tournamentService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tournaments"] });
@@ -44,7 +44,9 @@ export const useUpdateTournament = () => {
       tournamentService.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tournaments"] });
-      queryClient.invalidateQueries({ queryKey: ["tournaments", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["tournaments", variables.id],
+      });
     },
   });
 };

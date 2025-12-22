@@ -1,37 +1,41 @@
-import api from "./api";
 import type {
+  AnalyticsFilters,
+  DashboardStats,
   PlayerLeaderboardRow,
+  PlayerMetric,
   TeamLeaderboardRow,
   TournamentLeaderboardRow,
-  DashboardStats,
-  PlayerMetric,
   TournamentMetric,
-  AnalyticsFilters,
-} from "../types/analytics";
+} from "@/types/analytics";
+import api from "./api";
 
 /**
  * Get player leaderboard with filters
  */
 export const getPlayerLeaderboard = async (
   metric: PlayerMetric,
-  filters: AnalyticsFilters = {}
+  filters: AnalyticsFilters = {},
 ): Promise<PlayerLeaderboardRow[]> => {
   const params = new URLSearchParams();
   params.append("metric", metric);
 
-  if (filters.year !== undefined) params.append("year", filters.year.toString());
+  if (filters.year !== undefined)
+    params.append("year", filters.year.toString());
   if (filters.league) params.append("league", filters.league);
   if (filters.split) params.append("split", filters.split);
-  if (filters.playoffs !== undefined) params.append("playoffs", filters.playoffs.toString());
+  if (filters.playoffs !== undefined)
+    params.append("playoffs", filters.playoffs.toString());
   if (filters.patch) params.append("patch", filters.patch);
   if (filters.position) params.append("position", filters.position);
   if (filters.champion) params.append("champion", filters.champion);
   if (filters.side) params.append("side", filters.side);
-  if (filters.limit !== undefined) params.append("limit", filters.limit.toString());
-  if (filters.min_games !== undefined) params.append("min_games", filters.min_games.toString());
+  if (filters.limit !== undefined)
+    params.append("limit", filters.limit.toString());
+  if (filters.min_games !== undefined)
+    params.append("min_games", filters.min_games.toString());
 
   const response = await api.get<PlayerLeaderboardRow[]>(
-    `/api/analytics/leaderboard/players?${params.toString()}`
+    `/api/analytics/leaderboard/players?${params.toString()}`,
   );
   return response.data;
 };
@@ -40,20 +44,24 @@ export const getPlayerLeaderboard = async (
  * Get team leaderboard with filters
  */
 export const getTeamLeaderboard = async (
-  filters: AnalyticsFilters = {}
+  filters: AnalyticsFilters = {},
 ): Promise<TeamLeaderboardRow[]> => {
   const params = new URLSearchParams();
 
-  if (filters.year !== undefined) params.append("year", filters.year.toString());
+  if (filters.year !== undefined)
+    params.append("year", filters.year.toString());
   if (filters.league) params.append("league", filters.league);
   if (filters.split) params.append("split", filters.split);
-  if (filters.playoffs !== undefined) params.append("playoffs", filters.playoffs.toString());
+  if (filters.playoffs !== undefined)
+    params.append("playoffs", filters.playoffs.toString());
   if (filters.patch) params.append("patch", filters.patch);
-  if (filters.limit !== undefined) params.append("limit", filters.limit.toString());
-  if (filters.min_matches !== undefined) params.append("min_matches", filters.min_matches.toString());
+  if (filters.limit !== undefined)
+    params.append("limit", filters.limit.toString());
+  if (filters.min_matches !== undefined)
+    params.append("min_matches", filters.min_matches.toString());
 
   const response = await api.get<TeamLeaderboardRow[]>(
-    `/api/analytics/leaderboard/teams?${params.toString()}`
+    `/api/analytics/leaderboard/teams?${params.toString()}`,
   );
   return response.data;
 };
@@ -63,20 +71,23 @@ export const getTeamLeaderboard = async (
  */
 export const getTournamentLeaderboard = async (
   metric: TournamentMetric,
-  filters: AnalyticsFilters = {}
+  filters: AnalyticsFilters = {},
 ): Promise<TournamentLeaderboardRow[]> => {
   const params = new URLSearchParams();
   params.append("metric", metric);
 
-  if (filters.year !== undefined) params.append("year", filters.year.toString());
+  if (filters.year !== undefined)
+    params.append("year", filters.year.toString());
   if (filters.league) params.append("league", filters.league);
   if (filters.split) params.append("split", filters.split);
-  if (filters.playoffs !== undefined) params.append("playoffs", filters.playoffs.toString());
+  if (filters.playoffs !== undefined)
+    params.append("playoffs", filters.playoffs.toString());
   if (filters.patch) params.append("patch", filters.patch);
-  if (filters.limit !== undefined) params.append("limit", filters.limit.toString());
+  if (filters.limit !== undefined)
+    params.append("limit", filters.limit.toString());
 
   const response = await api.get<TournamentLeaderboardRow[]>(
-    `/api/analytics/leaderboard/tournaments?${params.toString()}`
+    `/api/analytics/leaderboard/tournaments?${params.toString()}`,
   );
   return response.data;
 };

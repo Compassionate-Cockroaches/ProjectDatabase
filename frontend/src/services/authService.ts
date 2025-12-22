@@ -1,5 +1,10 @@
+import type {
+  AuthToken,
+  AuthUser,
+  LoginRequest,
+  RegisterRequest,
+} from "@/types/auth";
 import api from "./api";
-import type { LoginRequest, RegisterRequest, AuthToken, AuthUser } from "../types/auth";
 
 /**
  * Login with username and password
@@ -16,7 +21,7 @@ export const login = async (credentials: LoginRequest): Promise<AuthToken> => {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   });
-  
+
   return response.data;
 };
 
@@ -24,7 +29,9 @@ export const login = async (credentials: LoginRequest): Promise<AuthToken> => {
  * Register a new user
  * Returns the created user on success
  */
-export const register = async (userData: RegisterRequest): Promise<AuthUser> => {
+export const register = async (
+  userData: RegisterRequest,
+): Promise<AuthUser> => {
   const response = await api.post<AuthUser>("/api/auth/register", userData);
   return response.data;
 };

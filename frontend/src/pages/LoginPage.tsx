@@ -1,11 +1,18 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useForm } from "@tanstack/react-form";
-import { useAuth } from "../contexts/AuthContext";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -20,11 +27,14 @@ export default function LoginPage() {
     onSubmit: async ({ value }) => {
       setError("");
       setIsSubmitting(true);
-      
+
       try {
         await login(value);
       } catch (err: any) {
-        setError(err.response?.data?.detail || "Login failed. Please check your credentials.");
+        setError(
+          err.response?.data?.detail ||
+            "Login failed. Please check your credentials.",
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -36,7 +46,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <form
           onSubmit={(e) => {
@@ -115,7 +127,10 @@ export default function LoginPage() {
             </Button>
             <p className="text-sm text-muted-foreground text-center">
               Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline font-medium">
+              <Link
+                to="/register"
+                className="text-primary hover:underline font-medium"
+              >
                 Sign up
               </Link>
             </p>

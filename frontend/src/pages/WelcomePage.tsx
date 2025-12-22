@@ -1,3 +1,11 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   IconChartBar,
   IconLogin,
@@ -7,14 +15,6 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
-import { Button } from "../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
 
 export default function WelcomePage() {
   return (

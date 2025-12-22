@@ -35,7 +35,13 @@ import {
   useUpdateTeam,
 } from "@/hooks/useTeams";
 import type { Team, TeamCreate, TeamUpdate } from "@/types/team";
-import { IconEdit, IconPlus, IconSearch, IconTrash, IconX } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconPlus,
+  IconSearch,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {

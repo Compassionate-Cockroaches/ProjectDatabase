@@ -1,4 +1,3 @@
-import { useUsers, useDeleteUser } from "../hooks/useUsers";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -8,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDeleteUser, useUsers } from "@/hooks/useUsers";
 
 export default function UsersPage() {
   const { data: users, isLoading, error } = useUsers();
@@ -28,7 +28,11 @@ export default function UsersPage() {
   }
 
   if (error) {
-    return <div className="text-destructive">Error loading users: {error.message}</div>;
+    return (
+      <div className="text-destructive">
+        Error loading users: {error.message}
+      </div>
+    );
   }
 
   return (

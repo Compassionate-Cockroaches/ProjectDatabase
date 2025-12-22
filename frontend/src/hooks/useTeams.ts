@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { teamService } from "../services/teamServices";
-import type { TeamCreate, TeamUpdate } from "../types/team";
+import { teamService } from "@/services/teamServices";
+import type { TeamCreate, TeamUpdate } from "@/types/team";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useTeams = (params?: { 
-  skip?: number; 
-  limit?: number; 
+export const useTeams = (params?: {
+  skip?: number;
+  limit?: number;
   search?: string;
   sort_by?: string;
   sort_order?: string;

@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { playerService } from "../services/playerServices";
-import type { PlayerCreate, PlayerUpdate } from "../types/player";
+import { playerService } from "@/services/playerServices";
+import type { PlayerCreate, PlayerUpdate } from "@/types/player";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const usePlayers = (params?: { 
-  skip?: number; 
-  limit?: number; 
-  search?: string; 
+export const usePlayers = (params?: {
+  skip?: number;
+  limit?: number;
+  search?: string;
   position?: string;
   sort_by?: string;
   sort_order?: string;
@@ -27,7 +27,7 @@ export const usePlayer = (id: string) => {
 export const useCreatePlayer = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({ 
+  return useMutation({
     mutationFn: (data: PlayerCreate) => playerService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
