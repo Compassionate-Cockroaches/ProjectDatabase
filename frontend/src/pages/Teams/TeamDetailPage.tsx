@@ -32,7 +32,11 @@ import {
   Cell,
 } from "recharts";
 import { teamService } from "@/services/teamServices";
-import type { TournamentHistory, PlayerRoster, MatchHistory } from "@/types/matchStats";
+import type {
+  TournamentHistory,
+  PlayerRoster,
+  MatchHistory,
+} from "@/types/matchStats";
 
 const CHART_COLORS = {
   primary: "var(--chart-1)",
@@ -277,37 +281,39 @@ export default function TeamDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tournaments.map((tournament: TournamentHistory, idx: number) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-medium">
-                        {tournament.league}
-                      </TableCell>
-                      <TableCell>{tournament.year}</TableCell>
-                      <TableCell>{tournament.split || "-"}</TableCell>
-                      <TableCell>
-                        {tournament.playoffs ? (
-                          <Badge variant="default">Yes</Badge>
-                        ) : (
-                          <Badge variant="outline">No</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right text-green-500">
-                        {tournament.wins}
-                      </TableCell>
-                      <TableCell className="text-right text-red-500">
-                        {tournament.losses}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {tournament.total_games > 0
-                          ? (
-                              (tournament.wins / tournament.total_games) *
-                              100
-                            ).toFixed(1)
-                          : 0}
-                        %
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {tournaments.map(
+                    (tournament: TournamentHistory, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">
+                          {tournament.league}
+                        </TableCell>
+                        <TableCell>{tournament.year}</TableCell>
+                        <TableCell>{tournament.split || "-"}</TableCell>
+                        <TableCell>
+                          {tournament.playoffs ? (
+                            <Badge variant="default">Yes</Badge>
+                          ) : (
+                            <Badge variant="outline">No</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right text-green-500">
+                          {tournament.wins}
+                        </TableCell>
+                        <TableCell className="text-right text-red-500">
+                          {tournament.losses}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {tournament.total_games > 0
+                            ? (
+                                (tournament.wins / tournament.total_games) *
+                                100
+                              ).toFixed(1)
+                            : 0}
+                          %
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
                 </TableBody>
               </Table>
             </div>

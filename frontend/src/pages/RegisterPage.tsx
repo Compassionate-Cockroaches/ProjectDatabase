@@ -49,7 +49,7 @@ export default function RegisterPage() {
         const error = err as { response?: { data?: { detail?: string } } };
         setError(
           error.response?.data?.detail ||
-            "Registration failed. Please try again."
+            "Registration failed. Please try again.",
         );
       } finally {
         setIsSubmitting(false);

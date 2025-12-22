@@ -34,7 +34,7 @@ export default function LoginPage() {
         const error = err as { response?: { data?: { detail?: string } } };
         setError(
           error.response?.data?.detail ||
-            "Login failed. Please check your credentials."
+            "Login failed. Please check your credentials.",
         );
       } finally {
         setIsSubmitting(false);

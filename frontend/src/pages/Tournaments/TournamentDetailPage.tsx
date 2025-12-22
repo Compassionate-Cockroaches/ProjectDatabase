@@ -241,98 +241,100 @@ export default function TournamentDetailPage() {
         <div className="h-64 flex items-center justify-center">
           <p className="text-muted-foreground">Loading tournament stats...</p>
         </div>
-      ) : stats && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Top Players */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconChartBar size={20} />
-                Top Players (KDA)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stats.top_players && stats.top_players.length > 0 ? (
-                <div className="space-y-2">
-                  {stats.top_players
-                    .slice(0, 5)
-                    .map((player: TopPlayer, idx: number) => (
-                      <div
-                        key={player.player_id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg font-bold text-muted-foreground">
-                            #{idx + 1}
-                          </span>
-                          <div>
-                            <Link
-                              to={`/players/${player.player_id}`}
-                              className="font-medium hover:text-primary hover:underline transition-colors"
-                            >
-                              {player.player_name}
-                            </Link>
-                            <p className="text-sm text-muted-foreground">
-                              {player.team_name}
+      ) : (
+        stats && (
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Top Players */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconChartBar size={20} />
+                  Top Players (KDA)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats.top_players && stats.top_players.length > 0 ? (
+                  <div className="space-y-2">
+                    {stats.top_players
+                      .slice(0, 5)
+                      .map((player: TopPlayer, idx: number) => (
+                        <div
+                          key={player.player_id}
+                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg font-bold text-muted-foreground">
+                              #{idx + 1}
+                            </span>
+                            <div>
+                              <Link
+                                to={`/players/${player.player_id}`}
+                                className="font-medium hover:text-primary hover:underline transition-colors"
+                              >
+                                {player.player_name}
+                              </Link>
+                              <p className="text-sm text-muted-foreground">
+                                {player.team_name}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-primary">
+                              {player.avg_kda?.toFixed(2)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {player.games_played} games
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-primary">
-                            {player.avg_kda?.toFixed(2)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {player.games_played} games
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No player data available
-                </p>
-              )}
-            </CardContent>
-          </Card>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    No player data available
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Champion Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconTrophy size={20} />
-                Most Picked Champions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {stats.champion_stats && stats.champion_stats.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={stats.champion_stats.slice(0, 5)}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="champion" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar
-                      dataKey="picks"
-                      fill={CHART_COLORS.quaternary}
-                      name="Picks"
-                    />
-                    <Bar
-                      dataKey="wins"
-                      fill={CHART_COLORS.tertiary}
-                      name="Wins"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No champion data available
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            {/* Champion Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconTrophy size={20} />
+                  Most Picked Champions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats.champion_stats && stats.champion_stats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={stats.champion_stats.slice(0, 5)}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="champion" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar
+                        dataKey="picks"
+                        fill={CHART_COLORS.quaternary}
+                        name="Picks"
+                      />
+                      <Bar
+                        dataKey="wins"
+                        fill={CHART_COLORS.tertiary}
+                        name="Wins"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    No champion data available
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )
       )}
 
       {/* Matches */}
@@ -362,7 +364,7 @@ export default function TournamentDetailPage() {
                           {match.teams?.map(
                             (
                               team: { team_name: string; result: boolean },
-                              idx: number
+                              idx: number,
                             ) => (
                               <div
                                 key={idx}
@@ -388,7 +390,7 @@ export default function TournamentDetailPage() {
                                     </span>
                                   )}
                               </div>
-                            )
+                            ),
                           )}
                         </div>
                         <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
@@ -451,5 +453,3 @@ export default function TournamentDetailPage() {
     </div>
   );
 }
-
-
