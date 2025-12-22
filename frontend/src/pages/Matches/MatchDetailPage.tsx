@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { matchService } from "@/services/matchServices";
+import type { TeamData, PlayerStat, TeamTotals } from "@/types/matchStats";
 
 export default function MatchDetailPage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -66,8 +67,8 @@ export default function MatchDetailPage() {
   const { match, tournament, teams } = matchDetails;
 
   // Separate players by team
-  const teamMap: Record<string, any[]> = {};
-  playerStats.forEach((player: any) => {
+  const teamMap: Record<string, PlayerStat[]> = {};
+  playerStats.forEach((player: PlayerStat) => {
     if (!teamMap[player.team_id]) {
       teamMap[player.team_id] = [];
     }
@@ -75,7 +76,7 @@ export default function MatchDetailPage() {
   });
 
   // Calculate team totals
-  const teamTotals: Record<string, any> = {};
+  const teamTotals: Record<string, TeamTotals> = {};
   Object.keys(teamMap).forEach((teamId) => {
     const players = teamMap[teamId];
     teamTotals[teamId] = {
@@ -88,8 +89,8 @@ export default function MatchDetailPage() {
     };
   });
 
-  const winningTeam = teams.find((t: any) => t.result === true);
-  const losingTeam = teams.find((t: any) => t.result === false);
+  const winningTeam = teams.find((t: TeamData) => t.result === true);
+  const losingTeam = teams.find((t: TeamData) => t.result === false);
 
   return (
     <div className="container mx-auto py-10 space-y-6">
@@ -161,7 +162,7 @@ export default function MatchDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
-            {teams.map((team: any, idx: number) => (
+            {teams.map((team: TeamData, idx: number) => (
               <div
                 key={idx}
                 className={`p-6 rounded-lg border-2 ${
@@ -210,7 +211,7 @@ export default function MatchDetailPage() {
       </Card>
 
       {/* Player Performance Tables */}
-      {teams.map((team: any, teamIdx: number) => (
+      {teams.map((team: TeamData, teamIdx: number) => (
         <Card key={teamIdx}>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -240,7 +241,7 @@ export default function MatchDetailPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {teamMap[team.team_id].map((player: any) => {
+                    {teamMap[team.team_id].map((player: PlayerStat) => {
                       const totalKills = teamTotals[team.team_id].kills;
                       const killParticipation =
                         totalKills > 0

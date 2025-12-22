@@ -30,10 +30,11 @@ export default function LoginPage() {
 
       try {
         await login(value);
-      } catch (err: any) {
+      } catch (err) {
+        const error = err as { response?: { data?: { detail?: string } } };
         setError(
-          err.response?.data?.detail ||
-            "Login failed. Please check your credentials.",
+          error.response?.data?.detail ||
+            "Login failed. Please check your credentials."
         );
       } finally {
         setIsSubmitting(false);

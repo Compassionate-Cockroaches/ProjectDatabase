@@ -45,10 +45,11 @@ export default function RegisterPage() {
           full_name: value.full_name || undefined,
           password: value.password,
         });
-      } catch (err: any) {
+      } catch (err) {
+        const error = err as { response?: { data?: { detail?: string } } };
         setError(
-          err.response?.data?.detail ||
-            "Registration failed. Please try again.",
+          error.response?.data?.detail ||
+            "Registration failed. Please try again."
         );
       } finally {
         setIsSubmitting(false);

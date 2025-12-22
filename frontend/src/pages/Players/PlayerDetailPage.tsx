@@ -33,6 +33,7 @@ import {
   Cell,
 } from "recharts";
 import { playerService } from "@/services/playerServices";
+import type { ChampionStat, TeamInfo, MatchInfo } from "@/types/matchStats";
 
 const CHART_COLORS = {
   primary: "var(--chart-1)",
@@ -270,7 +271,7 @@ export default function PlayerDetailPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {championStats.slice(0, 10).map((champ: any) => (
+                    {championStats.slice(0, 10).map((champ: ChampionStat) => (
                       <TableRow key={champ.champion}>
                         <TableCell className="font-medium">
                           {champ.champion}
@@ -357,7 +358,7 @@ export default function PlayerDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teams.map((team: any) => (
+                  {teams.map((team: TeamInfo) => (
                     <TableRow key={team.team_id}>
                       <TableCell className="font-medium">
                         <Link
@@ -405,7 +406,7 @@ export default function PlayerDetailPage() {
           ) : matchHistory && matchHistory.length > 0 ? (
             <>
               <div className="space-y-3">
-                {matchHistory.map((match: any) => (
+                {matchHistory.map((match: MatchInfo) => (
                   <div
                     key={match.match_id}
                     className="p-4 rounded-lg border hover:border-primary transition-colors"

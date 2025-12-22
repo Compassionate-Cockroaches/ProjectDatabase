@@ -26,13 +26,13 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
 import { teamService } from "@/services/teamServices";
+import type { TournamentHistory, PlayerRoster, MatchHistory } from "@/types/matchStats";
 
 const CHART_COLORS = {
   primary: "var(--chart-1)",
@@ -277,7 +277,7 @@ export default function TeamDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tournaments.map((tournament: any, idx: number) => (
+                  {tournaments.map((tournament: TournamentHistory, idx: number) => (
                     <TableRow key={idx}>
                       <TableCell className="font-medium">
                         {tournament.league}
@@ -346,7 +346,7 @@ export default function TeamDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players.map((player: any) => (
+                  {players.map((player: PlayerRoster) => (
                     <TableRow key={player.player_id}>
                       <TableCell className="font-medium">
                         <Link
@@ -406,7 +406,7 @@ export default function TeamDetailPage() {
           ) : matchHistory && matchHistory.length > 0 ? (
             <>
               <div className="space-y-3">
-                {matchHistory.map((match: any) => (
+                {matchHistory.map((match: MatchHistory) => (
                   <div
                     key={match.id}
                     className="p-4 rounded-lg border hover:border-primary transition-colors"

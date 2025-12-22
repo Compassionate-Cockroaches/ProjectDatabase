@@ -132,12 +132,6 @@ const PlayersPage: React.FC = () => {
   const hasNextPage = players && players.length === pageSize;
   const hasPrevPage = page > 0;
 
-  // Helper function to format team names
-  const getTeamsDisplay = (teamNames?: string[]) => {
-    if (!teamNames || teamNames.length === 0) return "-";
-    return teamNames.join(", ");
-  };
-
   if (isLoading)
     return <div className="container mx-auto py-10">Loading players...</div>;
   if (isError)

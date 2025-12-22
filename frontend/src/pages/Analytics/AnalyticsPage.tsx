@@ -39,6 +39,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  type PieLabelRenderProps,
 } from "recharts";
 
 // Using chart colors from theme (chart-1 through chart-5)
@@ -289,7 +290,7 @@ export default function AnalyticsPage() {
               setPlayerMetric(value as PlayerMetric)
             }
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-45">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -508,7 +509,7 @@ export default function AnalyticsPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry: any) =>
+                      label={(entry: PieLabelRenderProps) =>
                         `${entry.name}: ${((entry.percent || 0) * 100).toFixed(
                           0,
                         )}%`

@@ -1,16 +1,6 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import {
-  IconArrowLeft,
-  IconTrophy,
-  IconUsers,
-  IconSwords,
-  IconChartBar,
-} from "@tabler/icons-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -19,17 +9,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { tournamentService } from "@/services/tournamentServices";
+import type {
+  TeamStanding,
+  TopPlayer,
+  TournamentMatch,
+} from "@/types/matchStats";
 import {
-  BarChart,
+  IconArrowLeft,
+  IconChartBar,
+  IconSwords,
+  IconTrophy,
+  IconUsers,
+} from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import {
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { tournamentService } from "@/services/tournamentServices";
 
 const CHART_COLORS = {
   primary: "var(--chart-1)",
@@ -195,7 +200,7 @@ export default function TournamentDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teams.map((team: any, idx: number) => (
+                  {teams.map((team: TeamStanding, idx: number) => (
                     <TableRow key={team.team_id}>
                       <TableCell className="font-semibold">{idx + 1}</TableCell>
                       <TableCell className="font-medium">
@@ -232,7 +237,11 @@ export default function TournamentDetailPage() {
       </Card>
 
       {/* Tournament Stats */}
-      {stats && (
+      {statsLoading ? (
+        <div className="h-64 flex items-center justify-center">
+          <p className="text-muted-foreground">Loading tournament stats...</p>
+        </div>
+      ) : stats && (
         <div className="grid md:grid-cols-2 gap-6">
           {/* Top Players */}
           <Card>
@@ -247,7 +256,7 @@ export default function TournamentDetailPage() {
                 <div className="space-y-2">
                   {stats.top_players
                     .slice(0, 5)
-                    .map((player: any, idx: number) => (
+                    .map((player: TopPlayer, idx: number) => (
                       <div
                         key={player.player_id}
                         className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
@@ -342,7 +351,7 @@ export default function TournamentDetailPage() {
           ) : matches && matches.length > 0 ? (
             <>
               <div className="space-y-3">
-                {matches.map((match: any) => (
+                {matches.map((match: TournamentMatch) => (
                   <div
                     key={match.id}
                     className="p-4 rounded-lg border hover:border-primary transition-colors"
@@ -350,26 +359,37 @@ export default function TournamentDetailPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-4">
-                          {match.teams?.map((team: any, idx: number) => (
-                            <div key={idx} className="flex items-center gap-2">
-                              <span
-                                className={`font-medium ${team.result ? "text-green-500" : "text-red-500"}`}
+                          {match.teams?.map(
+                            (
+                              team: { team_name: string; result: boolean },
+                              idx: number
+                            ) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-2"
                               >
-                                {team.team_name}
-                              </span>
-                              <Badge
-                                variant={team.result ? "default" : "outline"}
-                                className="text-xs"
-                              >
-                                {team.result ? "W" : "L"}
-                              </Badge>
-                              {idx === 0 && match.teams.length > 1 && (
-                                <span className="text-muted-foreground">
-                                  vs
+                                <span
+                                  className={`font-medium ${team.result ? "text-green-500" : "text-red-500"}`}
+                                >
+                                  {team.team_name}
                                 </span>
-                              )}
-                            </div>
-                          ))}
+                                <Badge
+                                  variant={team.result ? "default" : "outline"}
+                                  className="text-xs"
+                                >
+                                  {team.result ? "W" : "L"}
+                                </Badge>
+                                {idx === 0 &&
+                                  match &&
+                                  match.teams &&
+                                  match.teams.length > 1 && (
+                                    <span className="text-muted-foreground">
+                                      vs
+                                    </span>
+                                  )}
+                              </div>
+                            )
+                          )}
                         </div>
                         <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                           {match.match_date && (
@@ -431,3 +451,5 @@ export default function TournamentDetailPage() {
     </div>
   );
 }
+
+
