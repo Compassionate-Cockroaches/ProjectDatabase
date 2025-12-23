@@ -62,7 +62,7 @@ export default function HomePage() {
       {/* Welcome Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-linear-to-r from-primary to-accent flex items-center justify-center">
             <IconSparkles size={24} className="text-primary-foreground" />
           </div>
           <div>
@@ -190,7 +190,7 @@ export default function HomePage() {
       </div>
 
       {/* Getting Started Tips */}
-      <Card className="p-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+      <Card className="p-6 bg-linear-to-r from-primary/5 to-accent/5 border-primary/20">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0">
             <IconSparkles size={20} className="text-primary-foreground" />

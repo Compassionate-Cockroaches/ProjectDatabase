@@ -276,7 +276,7 @@ const TournamentsPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <IconFilter className="mr-2" size={16} />
             <SelectValue placeholder="Year" />
           </SelectTrigger>
@@ -297,7 +297,7 @@ const TournamentsPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <SelectValue placeholder="League" />
           </SelectTrigger>
           <SelectContent>
@@ -317,7 +317,7 @@ const TournamentsPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <SelectValue placeholder="Playoffs" />
           </SelectTrigger>
           <SelectContent>
@@ -334,7 +334,7 @@ const TournamentsPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -351,7 +351,7 @@ const TournamentsPage: React.FC = () => {
             setPage(0);
           }}
         >
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-30">
             <SelectValue placeholder="Order" />
           </SelectTrigger>
           <SelectContent>
@@ -375,7 +375,7 @@ const TournamentsPage: React.FC = () => {
               <TableHead>Year</TableHead>
               <TableHead>Split</TableHead>
               <TableHead>Playoffs</TableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right w-25">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -446,7 +446,7 @@ const TournamentsPage: React.FC = () => {
               setPage(0);
             }}
           >
-            <SelectTrigger className="w-[100px]">
+            <SelectTrigger className="w-25">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
