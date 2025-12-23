@@ -1,22 +1,29 @@
-// frontend/src/hooks/useCRUD.ts
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import type { CRUDService } from "@/types/common";
 import { MESSAGES } from "@/constants/app";
+import type { CRUDService } from "@/types/common";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface UseCRUDOptions<T, TCreate, TUpdate> {
   entityName: string;
   queryKey: string[];
   service: CRUDService<T, TCreate, TUpdate>;
   initialPageSize?: number;
+  defaultSortBy?: string;
+  defaultSortOrder?: "asc" | "desc";
 }
 
-export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate = Partial<T>>({
+export function useCRUD<
+  T extends { id: string },
+  TCreate = Partial<T>,
+  TUpdate = Partial<T>,
+>({
   entityName,
   queryKey,
   service,
   initialPageSize = 10,
+  defaultSortBy,
+  defaultSortOrder = "asc",
 }: UseCRUDOptions<T, TCreate, TUpdate>) {
   const queryClient = useQueryClient();
 
@@ -24,18 +31,22 @@ export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState(defaultSortBy);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(defaultSortOrder);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [deletingItem, setDeletingItem] = useState<T | null>(null);
 
   // Fetch query
   const { data, isLoading, error } = useQuery({
-    queryKey: [...queryKey, page, pageSize, searchQuery],
+    queryKey: [...queryKey, page, pageSize, searchQuery, sortBy, sortOrder],
     queryFn: () =>
       service.getAll({
         skip: page * pageSize,
         limit: pageSize,
         search: searchQuery || undefined,
+        sort_by: sortBy,
+        sort_order: sortOrder,
       }),
   });
 
@@ -48,7 +59,9 @@ export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate 
       setIsCreateModalOpen(false);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || MESSAGES.ERROR.CREATE(entityName));
+      toast.error(
+        error.response?.data?.detail || MESSAGES.ERROR.CREATE(entityName)
+      );
     },
   });
 
@@ -62,7 +75,9 @@ export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate 
       setEditingItem(null);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || MESSAGES.ERROR.UPDATE(entityName));
+      toast.error(
+        error.response?.data?.detail || MESSAGES.ERROR.UPDATE(entityName)
+      );
     },
   });
 
@@ -75,7 +90,9 @@ export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate 
       setDeletingItem(null);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || MESSAGES.ERROR.DELETE(entityName));
+      toast.error(
+        error.response?.data?.detail || MESSAGES.ERROR.DELETE(entityName)
+      );
     },
   });
 
@@ -117,6 +134,17 @@ export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate 
     setPage(0); // Reset to first page when changing page size
   };
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      // Toggle sort order if clicking same column
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      // Set new column with default ascending order
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
+
   return {
     // Data
     data: data || [],
@@ -135,6 +163,13 @@ export function useCRUD<T extends { id: string }, TCreate = Partial<T>, TUpdate 
     // Search
     searchQuery,
     onSearch: handleSearch,
+
+    // Sorting
+    sort: {
+      sortBy,
+      sortOrder,
+      onSort: handleSort,
+    },
 
     // Modals/Dialogs
     modals: {

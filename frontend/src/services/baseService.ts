@@ -1,4 +1,4 @@
-import type { CRUDService } from "@/types/common";
+import type { CRUDService, PaginationParams } from "@/types/common";
 import api from "./api";
 
 export class BaseService<
@@ -12,7 +12,7 @@ export class BaseService<
     this.baseUrl = baseUrl;
   }
 
-  async getAll(params?: any): Promise<T[]> {
+  async getAll(params?: PaginationParams): Promise<T[]> {
     const response = await api.get(this.baseUrl, { params });
     return response.data;
   }

@@ -14,7 +14,10 @@ export interface PaginationParams {
   limit?: number;
   sort_by?: string;
   sort_order?: "asc" | "desc";
+  search?: string;
+  [key: string]: any;
 }
+
 
 export interface ApiResponse<T> {
   data: T;
