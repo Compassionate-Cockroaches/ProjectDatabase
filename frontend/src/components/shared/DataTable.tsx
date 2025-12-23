@@ -113,7 +113,7 @@ export function DataTable<T extends { id: string }>({
                   {column.header}
                 </TableHead>
               ))}
-              {actions && <TableHead className="w-[100px]">Actions</TableHead>}
+              {actions && <TableHead className="w-25">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,7 +166,7 @@ export function DataTable<T extends { id: string }>({
                 pagination.onPageSizeChange(Number(value))
               }
             >
-              <SelectTrigger className="w-[70px]">
+              <SelectTrigger className="w-17.5">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

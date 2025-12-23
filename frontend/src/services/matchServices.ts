@@ -1,46 +1,21 @@
-import api from "./api";
 import type { Match, MatchCreate, MatchUpdate } from "@/types/match";
+import api from "./api";
+import { BaseService } from "./baseService";
 
-export const matchService = {
-  getAll: async (params?: {
-    skip?: number;
-    limit?: number;
-    tournament_id?: string;
-    date_from?: string;
-    date_to?: string;
-    sort_by?: string;
-    sort_order?: string;
-  }): Promise<Match[]> => {
-    const response = await api.get("/api/matches/", { params });
-    return response.data;
-  },
+class MatchService extends BaseService<Match, MatchCreate, MatchUpdate> {
+  constructor() {
+    super("/api/matches");
+  }
 
-  getById: async (id: string): Promise<Match> => {
-    const response = await api.get(`/api/matches/${id}`);
-    return response.data;
-  },
-
-  create: async (data: MatchCreate): Promise<Match> => {
-    const response = await api.post("/api/matches/", data);
-    return response.data;
-  },
-
-  update: async (id: string, data: MatchUpdate): Promise<Match> => {
-    const response = await api.put(`/api/matches/${id}`, data);
-    return response.data;
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/api/matches/${id}`);
-  },
-
-  getDetails: async (id: string) => {
+  async getDetails(id: string) {
     const response = await api.get(`/api/matches/${id}/details`);
     return response.data;
-  },
+  }
 
-  getPlayerStats: async (id: string) => {
+  async getPlayerStats(id: string) {
     const response = await api.get(`/api/matches/${id}/player-stats`);
     return response.data;
-  },
-};
+  }
+}
+
+export const matchService = new MatchService();

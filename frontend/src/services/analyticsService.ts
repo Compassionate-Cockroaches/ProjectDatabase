@@ -14,7 +14,7 @@ import api from "./api";
  */
 export const getPlayerLeaderboard = async (
   metric: PlayerMetric,
-  filters: AnalyticsFilters = {},
+  filters: AnalyticsFilters = {}
 ): Promise<PlayerLeaderboardRow[]> => {
   const params = new URLSearchParams();
   params.append("metric", metric);
@@ -35,7 +35,7 @@ export const getPlayerLeaderboard = async (
     params.append("min_games", filters.min_games.toString());
 
   const response = await api.get<PlayerLeaderboardRow[]>(
-    `/api/analytics/leaderboard/players?${params.toString()}`,
+    `/api/analytics/leaderboard/players?${params.toString()}`
   );
   return response.data;
 };
@@ -44,7 +44,7 @@ export const getPlayerLeaderboard = async (
  * Get team leaderboard with filters
  */
 export const getTeamLeaderboard = async (
-  filters: AnalyticsFilters = {},
+  filters: AnalyticsFilters = {}
 ): Promise<TeamLeaderboardRow[]> => {
   const params = new URLSearchParams();
 
@@ -61,7 +61,7 @@ export const getTeamLeaderboard = async (
     params.append("min_matches", filters.min_matches.toString());
 
   const response = await api.get<TeamLeaderboardRow[]>(
-    `/api/analytics/leaderboard/teams?${params.toString()}`,
+    `/api/analytics/leaderboard/teams?${params.toString()}`
   );
   return response.data;
 };
@@ -71,7 +71,7 @@ export const getTeamLeaderboard = async (
  */
 export const getTournamentLeaderboard = async (
   metric: TournamentMetric,
-  filters: AnalyticsFilters = {},
+  filters: AnalyticsFilters = {}
 ): Promise<TournamentLeaderboardRow[]> => {
   const params = new URLSearchParams();
   params.append("metric", metric);
@@ -87,7 +87,7 @@ export const getTournamentLeaderboard = async (
     params.append("limit", filters.limit.toString());
 
   const response = await api.get<TournamentLeaderboardRow[]>(
-    `/api/analytics/leaderboard/tournaments?${params.toString()}`,
+    `/api/analytics/leaderboard/tournaments?${params.toString()}`
   );
   return response.data;
 };

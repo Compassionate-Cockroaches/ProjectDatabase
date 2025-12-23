@@ -1,53 +1,26 @@
-import api from "./api";
 import type { Player, PlayerCreate, PlayerUpdate } from "@/types/player";
+import api from "./api";
+import { BaseService } from "./baseService";
 
-export const playerService = {
-  getAll: async (params?: {
-    skip?: number;
-    limit?: number;
-    search?: string;
-    position?: string;
-    sort_by?: string;
-    sort_order?: string;
-  }): Promise<Player[]> => {
-    const response = await api.get("/api/players/", { params });
-    return response.data;
-  },
+class PlayerService extends BaseService<Player, PlayerCreate, PlayerUpdate> {
+  constructor() {
+    super("/api/players");
+  }
 
-  getById: async (id: string): Promise<Player> => {
-    const response = await api.get(`/api/players/${id}`);
-    return response.data;
-  },
-
-  create: async (data: PlayerCreate): Promise<Player> => {
-    const response = await api.post("/api/players/", data);
-    return response.data;
-  },
-
-  update: async (id: string, data: PlayerUpdate): Promise<Player> => {
-    const response = await api.put(`/api/players/${id}`, data);
-    return response.data;
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/api/players/${id}`);
-  },
-
-  getMatches: async (
-    id: string,
-    params?: { skip?: number; limit?: number },
-  ) => {
+  async getMatches(id: string, params?: { skip?: number; limit?: number }) {
     const response = await api.get(`/api/players/${id}/matches`, { params });
     return response.data;
-  },
+  }
 
-  getChampionStats: async (id: string) => {
+  async getChampionStats(id: string) {
     const response = await api.get(`/api/players/${id}/champions`);
     return response.data;
-  },
+  }
 
-  getTeams: async (id: string) => {
+  async getTeams(id: string) {
     const response = await api.get(`/api/players/${id}/teams`);
     return response.data;
-  },
-};
+  }
+}
+
+export const playerService = new PlayerService();

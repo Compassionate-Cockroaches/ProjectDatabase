@@ -29,6 +29,15 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+/*
+    params?: {
+      skip?: number;
+      limit?: number;
+      search?: string;
+      sort_by?: string;
+      sort_order?: string;
+    }
+*/
 export interface CRUDService<T, TCreate = Partial<T>, TUpdate = Partial<T>> {
   getAll: (params?: any) => Promise<T[]>;
   getById: (id: string) => Promise<T>;
