@@ -59,6 +59,7 @@ interface DataTableProps<T> {
   };
   actions?: (row: T) => React.ReactNode;
   onRowClick?: (row: T) => void;
+  filterBar?: React.ReactNode;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -72,6 +73,7 @@ export function DataTable<T extends { id: string }>({
   emptyState,
   actions,
   onRowClick,
+  filterBar,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -88,6 +90,9 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <div className="space-y-4">
+      {/* Filter Bar */}
+      {filterBar && <div className="flex gap-4 flex-wrap">{filterBar}</div>}
+
       {/* Search Bar */}
       {searchable && (
         <div className="flex items-center gap-2">
